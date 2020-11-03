@@ -213,7 +213,7 @@
 50007	187	191	202	217	40
 50008	170	191	185	217	40
 #die
-50031	152	202	168	217	20
+50031	152	202	168	217	40
 					
 # ani_id	sprite1_id	time1	sprite2_id	time2	...
 [ANIMATIONS]
@@ -419,13 +419,13 @@
 # type	x	y	ani_set_id	width	height	extra_settings per object type
 # type: 0 = Mario , 1 = Brick, 2 = Goomba,6=Koopas ,4 = Color brick,5=PIPE
 # MARIO
-0	50.0	300	1	16	32
+0	550.0	300	1	16	32
 
 # GOOMBA
 2	100	300	3	16	16
 #
 # KOOPAS
-6	560	300	6	17	29
+6	550	300	6	17	29
 # BRICK 
 # --- platform (hint: I created the list using Excel!) ----
 1	0	417	2	624	16

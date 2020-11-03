@@ -11,6 +11,7 @@
 #include "Brick.h"
 #include "Portal.h"
 #include "Sprites.h"
+#include "Koopas.h"
 
 CMario::CMario(float x, float y) : CGameObject()
 {
@@ -24,7 +25,7 @@ CMario::CMario(float x, float y) : CGameObject()
 	this->x = x;
 	this->y = y;
 	Gravity = 0;
-	IsWalkingR = IsWalkingL = IsJumping = IsSlowDown = IsMaxspeed = false;
+	IsWalkingR = IsWalkingL = IsJumping = IsSlowDown = IsMaxspeed = IsSitting=IsDie = false;
 	IsFlying = false;
 	Fire *f = new Fire(1);
 	LstWeapon.push_back(f);
@@ -35,8 +36,8 @@ CMario::CMario(float x, float y) : CGameObject()
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
-	if (state == MARIO_STATE_SIT)
-		DebugOut(L"line 39 state sit\n");
+	/*if (state == MARIO_STATE_SIT)
+		DebugOut(L"line 39 state sit\n");*/
 	if (x < CGame::GetInstance()->GetCamX())
 		x = CGame::GetInstance()->GetCamX();
 	// Calculate dx, dy 
@@ -75,9 +76,12 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		CalcPotentialCollisions(coObjects, coEvents);
 	/*if (!IsWalking)
 		vx -= nx*MARIO_DECELERATE;*/
-
+	if (IsDie)
+	{
+		state = MARIO_STATE_DIE;
+	}
 	if (IsWalking) {
-		IsSitting = false;
+		//IsSitting = false;
 		if (vx == 0) {
 			vx = nx * MARIO_WALKING_SPEED;
 			if (nx > 0)
@@ -92,6 +96,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				if (IsWalkingR) {
 					//DebugOut(L"WR\n");
 					vx += MARIO_ACCELERATE;
+					state = MARIO_STATE_WALKING_RIGHT;
 					if (!IsRunning && vx >= MARIO_WALKING_MAXSPEED)
 						vx = MARIO_WALKING_MAXSPEED;
 					else if (IsRunning) {
@@ -132,9 +137,10 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					}
 				}
 			}
-			else {
+			else {////vx<0------->dang di qua trai/////////////
 				if (IsWalkingL) {
 					vx -= MARIO_ACCELERATE;
+					state = MARIO_STATE_WALKING_LEFT;
 					if (!IsRunning &&vx <= -MARIO_WALKING_MAXSPEED)
 						vx = -MARIO_WALKING_MAXSPEED;
 					else if (IsRunning) {
@@ -222,7 +228,6 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		state = MARIO_STATE_SIT;
 	}
 
-
 	// reset untouchable timer if untouchable time has passed
 	if (GetTickCount() - untouchable_start > MARIO_UNTOUCHABLE_TIME)
 	{
@@ -268,7 +273,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
 			if (nx != 0) {
-
+				DebugOut(L"%d\n", nx);
 				//colorbrick
 				if (e->obj->GetType() == GType::COLORBRICK) { x += dx; }
 
@@ -276,22 +281,41 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				if (e->obj->GetType() == GType::BRICK) {
 					if (!IsWalking)
 						if (!IsSitting) {
-							DebugOut(L"line 277 IDLE\n");
+							//DebugOut(L"line 277 IDLE\n");
 							state = MARIO_STATE_IDLE;
+						}
+						else
+						{
+							state = MARIO_STATE_SIT;
 						}
 					if (!IsFlying) {
 						IsOnGround = true;
 
 					}
 				}
+				//KOOPAS
+				if (e->obj->GetType() == GType::KOOPAS)
+				{
+					if (e->obj->GetState() == KOOPAS_STATE_WALKING)
+					{
+						DebugOut(L"LINE 296 DIE NX!=0");
+						SetState(MARIO_STATE_DIE);
+					}
+					else
+						return;
+				}
 			}
-			else {
+			else if(nx==0){
+				if (e->obj->GetType() == GType::KOOPAS)
+					if (e->nx != 0&&e->obj->GetState()==KOOPAS_STATE_WALKING)
+						SetState(MARIO_STATE_DIE);
+			}
 
-			}
 			if (ny != 0) {
 				if (e->obj->GetType() == GType::COLORBRICK) {
 					if (e->ny == 1) {
 						y += dy;
+						//KO XAY RA CHUYEN GI
 					}
 					else {
 						IsOnGround = true;
@@ -319,9 +343,9 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						if (IsFallfly)
 						{
 							IsWalking = true;
+							IsFallfly = false;
 							state = MARIO_STATE_WALKING;
 							vx = nx * MARIO_WALKING_SPEED;
-							IsFallfly = false;
 						}
 					}
 				}
@@ -334,8 +358,8 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						if (IsJumping) {
 							IsJumping = false;
 							IsFalling = true;
-							if (!IsSitting)
-								DebugOut(L"mario line 323 jump\n");
+							/*if (!IsSitting)
+								DebugOut(L"mario line 323 jump\n");*/
 							state = MARIO_STATE_FALLING;
 						}
 					}
@@ -371,6 +395,22 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						}
 					}
 				}
+				if (e->obj->GetType() == GType::KOOPAS)
+				{
+					if (e->ny < 0)
+					{
+						if (e->obj->GetState() == KOOPAS_STATE_WALKING)
+						{
+							DebugOut(L"Line 398 set state walking");
+							e->obj->SubHealth(1);
+						}
+						if (e->obj->GetState() == KOOPAS_STATE_DIE) {
+							e->obj->SubHealth(1);
+							DebugOut(L"Line 404 set state attack");
+
+						}
+					}
+				}
 			}
 			else {
 				if (e->obj->GetType() == GType::BRICK) {
@@ -386,15 +426,16 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
 	if (y > 680)
 		Reset();
-	if(state == MARIO_STATE_SIT)
-		DebugOut(L"line 387 state sit\n");
+	/*if(state == MARIO_STATE_SIT)
+		DebugOut(L"line 387 state sit\n");*/
 }
 
 void CMario::Render()
 {
 	//DebugOut(L"state %d\n", state);
-	if (state == MARIO_STATE_DIE)
+	if (state == MARIO_STATE_DIE) {
 		ani = MARIO_ANI_DIE;
+	}
 	else
 		if (level == MARIO_LEVEL_BIG)
 		{
@@ -743,8 +784,8 @@ void CMario::SetState(int state)
 	case MARIO_STATE_WALKING_RIGHT:
 		IsWalking = true;
 		IsWalkingR = true;
-		IsSitting = false;
-		if (IsSitting) {
+		if (IsSitting)
+		{
 			IsSitting = false;
 			y -= 10;
 		}
@@ -752,11 +793,12 @@ void CMario::SetState(int state)
 	case MARIO_STATE_WALKING_LEFT:
 		IsWalking = true;
 		IsWalkingL = true;
-		IsSitting = false;
-		if (IsSitting) {
+		if (IsSitting)
+		{
 			IsSitting = false;
 			y -= 10;
 		}
+		//IsSitting = false;
 		break;
 	case MARIO_STATE_SPEEDDOWNRIGHT:
 		//IsWalking = false;
@@ -764,12 +806,7 @@ void CMario::SetState(int state)
 		break;
 	case MARIO_STATE_IDLE:
 		vx = 0;
-		DebugOut(L"line 760 IDLE\n");
-		if (IsSitting)
-		{
-			IsSitting = false;
-			y -= 10;
-		}
+		//DebugOut(L"line 760 IDLE\n");
 		break;
 	case MARIO_STATE_RUNNING:
 		IsRunning = true;
@@ -780,10 +817,6 @@ void CMario::SetState(int state)
 		IsAttacking = true;
 		break;
 	case MARIO_STATE_FIRE:
-		if (!IsSitting) {
-			DebugOut(L"line 777 IDLE\n");
-			this->state = MARIO_STATE_IDLE;
-		}
 		if (nx == 1)
 		{
 			if (LstWeapon[0]->GetHealth() <= 0)
@@ -828,26 +861,25 @@ void CMario::SetState(int state)
 			}
 		}break;
 	case MARIO_STATE_SIT:
-		if (IsJumping || IsFlying || IsWalking || IsRunning)
-			return;
-		else {
-			if (!IsSitting)
-			{
-				DebugOut(L"Sitting");
-				//IsSitting = true;
-			}
+		if ((!IsWalkingR&&IsWalkingL == false && !IsRunning) || vx == 0)
+		{
+			IsSitting = true;
+		}
+		else
+		{
+			IsSitting = false;
 		}
 		break;
 	case MARIO_STATE_UP:
 	{
-		DebugOut(L"line 787 Mario : Up\n");
+		//DebugOut(L"line 787 Mario : Up\n");
 		if (IsOnGround) {
-			DebugOut(L"line 789 Mario : On ground\n");
+			//DebugOut(L"line 789 Mario : On ground\n");
 			startfly = GetTickCount64();
 			if ((nx < 0 && vx > -MARIO_RUNNING_MAXSPEED) || (nx > 0 && vx < MARIO_RUNNING_MAXSPEED))
 			{
 				//jump
-				DebugOut(L"line 742 Mario : Jump press\n");
+				//DebugOut(L"line 742 Mario : Jump press\n");
 				IsJumping = true;
 				IsOnGround = false;
 				vy = -MARIO_JUMP_SPEED_Y;
@@ -863,7 +895,7 @@ void CMario::SetState(int state)
 		}
 		else {
 			//falling
-			DebugOut(L"line 808 Mario : Falling\n");
+			//DebugOut(L"line 808 Mario : Falling\n");
 			if (!IsJumping && !IsFlying) {
 				vy = -MARIO_JUMP_SPEED_Y;
 				IsJumping = true;
@@ -924,9 +956,23 @@ void CMario::SetState(int state)
 		//DebugOut(L"FG: %f\n", Gravity);
 		break;
 	}
+	case MARIO_STATE_DIE:
+		if (!IsDie)
+		{
+		vy = -MARIO_DIE_DEFLECT_SPEED / 2;
+		IsDie = true;
+
+		}
+		else
+		{
+			IsDie = false;
+			//this->state = MARIO_STATE_IDLE;
+		}
+		break;
 	default:
 		break;
 	}
+
 }
 
 void CMario::GetBoundingBox(float &left, float &top, float &right, float &bottom)
@@ -941,7 +987,7 @@ void CMario::GetBoundingBox(float &left, float &top, float &right, float &bottom
 		bottom = y + MARIO_BIG_BBOX_HEIGHT;
 		if (state == MARIO_STATE_SIT)
 		{
-			right = x + 18;
+			right = x + 10;
 			bottom = y + MARIO_SMALL_BBOX_HEIGHT + 2;
 		}
 
@@ -960,6 +1006,7 @@ void CMario::Reset()
 {
 	SetState(MARIO_STATE_IDLE);
 	SetLevel(MARIO_LEVEL_BIG);
+	IsDie = false;
 	SetPosition(start_x, start_y);
 	SetSpeed(0, 0);
 }

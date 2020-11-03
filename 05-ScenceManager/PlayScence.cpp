@@ -307,8 +307,11 @@ void CPlayScene::Unload()
 
 void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 {
+
 	DebugOut(L"[INFO] KeyDown: %d\n", KeyCode);
 	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
+	if (mario->GetState() == MARIO_STATE_DIE)
+		return;
 	//DebugOut(L"int: %d\n", mario->IsJumping);
 	switch (KeyCode)
 	{
@@ -348,7 +351,7 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	}
 	case DIK_S:
 	{
-		DebugOut(L"line 352 Press S\n");
+		//DebugOut(L"line 352 Press S\n");
 		mario->SetState(MARIO_STATE_UP);
 		break;
 	}
@@ -366,7 +369,11 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 		return;
 	if (game->IsKeyDown(DIK_DOWN))
 	{
+		if ((!mario->IsWalking)||!mario->IsRunning)
+		{
+
 		mario->SetState(MARIO_STATE_SIT);
+		}
 	}
 	if (game->IsKeyDown(DIK_RIGHT)) {
 		mario->nx = 1;
@@ -428,14 +435,21 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 		break;
 	case DIK_DOWN:
 		if (mario->IsSitting) {
+			//DebugOut(L"LINE 435 ISSITTING=FALSE");
 			mario->IsSitting = false;
 			float mx, my;
 			mario->GetPosition(mx, my);
-			mario->SetPosition(mx, my - 10);
+			mario->y -= 10;
+			//mario->SetPosition(mx, my - 10);
 			DebugOut(L"line 435 PS IDLE\n");
 			mario->SetState(MARIO_STATE_IDLE);
+			break;
 		}
-		break;
+		else
+		{
+			break;
+		}
+		//break;
 	}
 
 }

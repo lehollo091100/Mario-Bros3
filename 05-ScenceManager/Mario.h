@@ -149,7 +149,7 @@ public:
 	int ani;
 	vector<LPGAMEOBJECT> LstWeapon;
 public:
-	bool IsWalkingR, IsWalkingL, IsRunning, IsSitting, IsRollback, IsSlowDown, IsFalling, IsMaxspeed, IsAttacking;
+	bool IsWalkingR, IsWalkingL, IsRunning, IsSitting, IsRollback, IsSlowDown, IsFalling, IsMaxspeed, IsAttacking,IsDie;
 	bool IsJumping;
 	bool IsWalking;
 	bool IsFallSlow;
@@ -175,6 +175,7 @@ public:
 	virtual void Render();
 
 	void SetState(int state);
+	
 	void SetLevel(int l) {
 		if (level == 1) {
 			y -= MARIO_BIG_BBOX_HEIGHT - MARIO_SMALL_BBOX_HEIGHT;

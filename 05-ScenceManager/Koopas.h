@@ -1,20 +1,25 @@
 #pragma once
 
 #include "GameObject.h"
+#include "Game.h"
 
-#define KOOPAS_WALKING_SPEED 0.03f;
 
-#define KOOPAS_BBOX_WIDTH 16
-#define KOOPAS_BBOX_HEIGHT 26
-#define KOOPAS_BBOX_HEIGHT_DIE 16
+#define KOOPAS_WALKING_SPEED 0.03f
+#define KOOPAS_ATTACK_SPEED		0.1f
 
-#define KOOPAS_STATE_WALKING 100
-#define KOOPAS_STATE_DIE 200
+#define KOOPAS_BBOX_WIDTH		16
+#define KOOPAS_BBOX_HEIGHT		26
+#define KOOPAS_BBOX_HEIGHT_DIE		10
+
+#define KOOPAS_STATE_WALKING		100
+#define KOOPAS_STATE_DIE		200
+#define KOOPAS_STATE_ATTACK		300
 
 #define KOOPAS_ANI_WALKING_LEFT 0
 #define KOOPAS_ANI_WALKING_RIGHT 1
 #define KOOPAS_ANI_DIE 2
-
+#define KOOPAS_LEVEL_NORMAL			1
+#define KOOPAS_LEVEL_DEFEND		2
 class CKoopas : public CGameObject
 {
 	int range;
@@ -23,7 +28,19 @@ class CKoopas : public CGameObject
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects);
 	virtual void Render();
 	float StartPX;
+
 public:
+	int level;
+	bool IsWalking,IsAttacking;
 	CKoopas(int range = 50 );
 	virtual void SetState(int state);
+	int GetState() {
+		return state;
+	}
+	int GetType() { return GType::KOOPAS; }
+	void SetLevel(int l)
+	{
+		level = l;
+	}
+	int GetLevel() { return level; }
 };
