@@ -25,7 +25,7 @@ CMario::CMario(float x, float y) : CGameObject()
 	this->x = x;
 	this->y = y;
 	Gravity = 0;
-	IsWalkingR = IsWalkingL = IsJumping = IsSlowDown = IsMaxspeed = IsSitting=IsDie = false;
+	IsWalkingR = IsWalkingL = IsJumping = IsSlowDown = IsMaxspeed = IsSitting = IsDie = false;
 	IsFlying = false;
 	Fire *f = new Fire(1);
 	LstWeapon.push_back(f);
@@ -76,10 +76,6 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		CalcPotentialCollisions(coObjects, coEvents);
 	/*if (!IsWalking)
 		vx -= nx*MARIO_DECELERATE;*/
-	if (IsDie)
-	{
-		state = MARIO_STATE_DIE;
-	}
 	if (IsWalking) {
 		//IsSitting = false;
 		if (vx == 0) {
@@ -228,6 +224,10 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		state = MARIO_STATE_SIT;
 	}
 
+	if (IsDie)
+	{
+		state = MARIO_STATE_DIE;
+	}
 	// reset untouchable timer if untouchable time has passed
 	if (GetTickCount() - untouchable_start > MARIO_UNTOUCHABLE_TIME)
 	{
@@ -272,7 +272,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		for (UINT i = 0; i < coEventsResult.size(); i++)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
-			if (nx != 0) {
+			if (e->nx != 0) {
 				DebugOut(L"%d\n", nx);
 				//colorbrick
 				if (e->obj->GetType() == GType::COLORBRICK) { x += dx; }
@@ -296,22 +296,30 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				//KOOPAS
 				if (e->obj->GetType() == GType::KOOPAS)
 				{
-					if (e->obj->GetState() == KOOPAS_STATE_WALKING)
-					{
-						DebugOut(L"LINE 296 DIE NX!=0");
-						SetState(MARIO_STATE_DIE);
-					}
-					else
-						return;
+					//if (e->nx != 0) {
+
+						if (e->obj->GetState() == KOOPAS_STATE_WALKING)
+						{
+							//DebugOut(L"LINE 296 DIE NX!=0");
+							SetState(MARIO_STATE_DIE);
+						}
+						if (e->obj->GetState() == KOOPAS_STATE_DEFEND)
+						{
+							e->obj->SubHealth(1);
+						}
+					//}
 				}
 			}
-			else if(nx==0){
+			/*else if(nx==0){
 				if (e->obj->GetType() == GType::KOOPAS)
 					if (e->nx != 0&&e->obj->GetState()==KOOPAS_STATE_WALKING)
 						SetState(MARIO_STATE_DIE);
+			}*/
+			if (e->obj->GetType() == GType::KOOPAS)
+			{
+				DebugOut(L"e->ny%f\n", e->ny);
 			}
-
-			if (ny != 0) {
+			if (e->ny != 0) {
 				if (e->obj->GetType() == GType::COLORBRICK) {
 					if (e->ny == 1) {
 						y += dy;
@@ -397,17 +405,41 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				}
 				if (e->obj->GetType() == GType::KOOPAS)
 				{
-					if (e->ny < 0)
+					DebugOut(L"e->ny%f\n", e->ny);
+					if (e->ny < 0 )
+					{
+						DebugOut(L"line 407");
+						if (e->obj->GetState() == KOOPAS_STATE_WALKING)
+						{
+							DebugOut(L"Line 411 set state walking");
+							e->obj->SubHealth(1);
+							vy -= MARIO_DIE_DEFLECT_SPEED;
+						}
+						if (e->obj->GetState() == KOOPAS_STATE_DEFEND) {
+							/*if (x >= e->obj->GetX() + (KOOPAS_BBOX_WIDTH / 2))
+							{
+								e->nx = -1;
+							}
+							else if (x < e->obj->GetX() + (KOOPAS_BBOX_WIDTH / 2))
+							{
+								e->nx = 1;
+							}*/
+							e->obj->SubHealth(1);
+							DebugOut(L"Line 404 set state attack");
+							vy -= MARIO_DIE_DEFLECT_SPEED;
+							//SweptAABBEx(e->obj);
+						}
+					}
+					else if (e->ny > 0)
 					{
 						if (e->obj->GetState() == KOOPAS_STATE_WALKING)
 						{
-							DebugOut(L"Line 398 set state walking");
-							e->obj->SubHealth(1);
+							//DebugOut(L"Line 398 set state walking");
+							SetState(MARIO_STATE_DIE);
 						}
-						if (e->obj->GetState() == KOOPAS_STATE_DIE) {
-							e->obj->SubHealth(1);
-							DebugOut(L"Line 404 set state attack");
-
+						else
+						{
+							return;
 						}
 					}
 				}
@@ -959,13 +991,13 @@ void CMario::SetState(int state)
 	case MARIO_STATE_DIE:
 		if (!IsDie)
 		{
-		vy = -MARIO_DIE_DEFLECT_SPEED / 2;
-		IsDie = true;
+			vy = -MARIO_DIE_DEFLECT_SPEED / 2;
+			IsDie = true;
 
 		}
 		else
 		{
-			IsDie = false;
+			//IsDie = false;
 			//this->state = MARIO_STATE_IDLE;
 		}
 		break;

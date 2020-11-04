@@ -8,7 +8,8 @@ CKoopas::CKoopas(int range)
 	nx = 1;
 	type = GType::KOOPAS;
 	vx = KOOPAS_WALKING_SPEED;
-	SetHealth(2);
+	SetHealth(3);
+	IsDefending = false;
 	level = KOOPAS_LEVEL_NORMAL;
 	IsWalking = true;
 }
@@ -17,6 +18,7 @@ CKoopas::CKoopas(int range)
 
 void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
+	DebugOut(L"2:%f\n", vx);
 	//if (health <= 0)
 	//	return;
 	//float cam_x = CGame::GetInstance()->GetCamX();
@@ -24,37 +26,59 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	////out cam
 	//if (x > cam_x + cam_w || x < cam_x)
 	//	health = 0;
+	if (health == 3)
+	{
+		//DebugOut(L"HEAL =3\n");
+	}
+	if (health == 2)
+	{
+		//DebugOut(L"HEAL =2\n");
+	}
 	if (StartPX == 0)
 		StartPX = x;
-	if (health == 2) {
-		if (nx == -1)
-			if ((x - StartPX) <= -range) {
-				nx = -nx;
-				vx = nx * KOOPAS_WALKING_SPEED;
-			}
-		if (nx == 1)
-			if ((x + 14 - StartPX) >= range) {
-				nx = -nx;
-				vx = nx * KOOPAS_WALKING_SPEED;
-			}
+	if (health == 3) {
+
+		if (IsWalking) {
+			if (nx == -1)
+				if ((x - StartPX) <= -range) {
+					nx = -nx;
+					vx = nx * KOOPAS_WALKING_SPEED;
+				}
+			if (nx == 1)
+				if ((x + 14 - StartPX) >= range) {
+					nx = -nx;
+					vx = nx * KOOPAS_WALKING_SPEED;
+				}
+		}
+	}
+	if (health == 2)
+	{
+		//SetLevel(KOOPAS_LEVEL_DEFEND);
+		IsWalking == false;
+		SetState(KOOPAS_STATE_DEFEND);
 	}
 	if (health == 1)
 	{
-		//SetLevel(KOOPAS_LEVEL_DEFEND);
-		if (state == KOOPAS_STATE_WALKING)
-		{
-			/*y += 3;*/
-			state = KOOPAS_STATE_DIE;
-			//vy = 0;
-		}
+		IsDefending = false;
+		if (state != KOOPAS_STATE_ATTACK)
+			SetState(KOOPAS_STATE_ATTACK);
+		//DebugOut(L"health==1 line 56 \n");
 	}
-	if (health==0)
+	DebugOut(L"%d\n", state);
+	if (IsWalking)
 	{
-		if (state == KOOPAS_STATE_DIE)
-		{
-			state = KOOPAS_STATE_ATTACK;
-			//vx = nx * KOOPAS_WALKING_SPEED * 2;
-		}
+		state = KOOPAS_STATE_WALKING;
+	}
+	if (IsDefending)
+	{
+		state = KOOPAS_STATE_DEFEND;
+		vx = 0;
+	}
+	if (IsAttacking)
+	{
+		state = KOOPAS_STATE_ATTACK;
+		vx = nx * KOOPAS_ATTACK_SPEED;
+		//DebugOut(L"LINE 72 ATTACK STATE\n");
 	}
 	//if(nx == 1 && abs(x - 14 - StartPX) >= range) {
 	//	nx = -nx;
@@ -91,41 +115,60 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		for (UINT i = 0; i < coEventsResult.size(); i++)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
-			if (e->obj->GetType() == GType::BRICK) {
-				if (e->nx != 0 &&(state==KOOPAS_STATE_WALKING||state==KOOPAS_STATE_ATTACK))
-				{
-					nx = -nx;
-					vx = nx * KOOPAS_WALKING_SPEED;
+			if (state == KOOPAS_STATE_WALKING)
+			{
+
+				if (e->obj->GetType() == GType::BRICK) {
+					if (e->nx != 0)
+					{
+						this->nx = -this->nx;
+						vx = this->nx * KOOPAS_WALKING_SPEED;
+					}
+				}
+				else {
+					x += dx;
+				}
+			}
+			if (state == KOOPAS_STATE_ATTACK)
+			{
+				if (e->obj->GetType() == GType::BRICK) {
+					if (e->nx != 0)
+					{
+						this->nx = -this->nx;
+						vx = this->nx * KOOPAS_ATTACK_SPEED;
+						DebugOut(L"%f\n", vx);
+					}
+					else {
+						x += dx;
+					}
 				}
 			}
 
-			
-			if (e->obj->GetType() == GType::COLORBRICK)
-			{
-				if (nx != 0)
-				{
-					x += dx;
-				}
-				/*if (e->ny == -1)
-				{
-					state = KOOPAS_STATE_WALKING;
-					vx += dx;
-					vy = 0;
-				}*/
-			}
-			else {
-				x += dx;
-			}
+			//if (e->obj->GetType() == GType::COLORBRICK)
+			//{
+			//	if (nx != 0)
+			//	{
+			//		x += dx;
+			//	}
+			//	/*if (e->ny == -1)
+			//	{
+			//		state = KOOPAS_STATE_WALKING;
+			//		vx += dx;
+			//		vy = 0;
+			//	}*/
+			//}
+
 		}
 	}
 
 	for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
+
 }
 
 void CKoopas::Render()
 {
 	int ani = KOOPAS_ANI_WALKING_LEFT;
-	if (state == KOOPAS_STATE_DIE || state == KOOPAS_STATE_ATTACK) {
+	if (state == KOOPAS_STATE_DEFEND || state == KOOPAS_STATE_ATTACK) {
 		ani = KOOPAS_ANI_DIE;
 	}
 	else if (vx > 0) ani = KOOPAS_ANI_WALKING_RIGHT;
@@ -141,17 +184,19 @@ void CKoopas::SetState(int state)
 	CGameObject::SetState(state);
 	switch (state)
 	{
-	case KOOPAS_STATE_DIE:
+	case KOOPAS_STATE_DEFEND:
 
-		vx = 0;
-		vy = 0;
+
+		//DebugOut(L"LINE 147 KOOPAS.CPP KOOPAS STATE DIE \n");
+		IsDefending = true;
 		break;
 	case KOOPAS_STATE_WALKING:
 		//this->state = KOOPAS_STATE_WALKING;
 		IsWalking = true;
 		break;
 	case KOOPAS_STATE_ATTACK:
-		IsAttacking;
+		IsAttacking = true;
+		//DebugOut(L"CASE ATTACK \n");
 		break;
 	}
 
@@ -162,7 +207,7 @@ void CKoopas::GetBoundingBox(float &left, float &top, float &right, float &botto
 	top = y;
 	right = x + KOOPAS_BBOX_WIDTH;
 
-	if (state == KOOPAS_STATE_DIE||state==KOOPAS_STATE_ATTACK)
+	if (state == KOOPAS_STATE_DEFEND || state == KOOPAS_STATE_ATTACK)
 		bottom = y + KOOPAS_BBOX_HEIGHT_DIE;
 	else
 		bottom = y + KOOPAS_BBOX_HEIGHT;

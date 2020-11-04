@@ -9,10 +9,10 @@
 
 #define KOOPAS_BBOX_WIDTH		16
 #define KOOPAS_BBOX_HEIGHT		26
-#define KOOPAS_BBOX_HEIGHT_DIE		10
+#define KOOPAS_BBOX_HEIGHT_DIE		16
 
 #define KOOPAS_STATE_WALKING		100
-#define KOOPAS_STATE_DIE		200
+#define KOOPAS_STATE_DEFEND		200
 #define KOOPAS_STATE_ATTACK		300
 
 #define KOOPAS_ANI_WALKING_LEFT 0
@@ -31,7 +31,7 @@ class CKoopas : public CGameObject
 
 public:
 	int level;
-	bool IsWalking,IsAttacking;
+	bool IsWalking,IsAttacking,IsDefending;
 	CKoopas(int range = 50 );
 	virtual void SetState(int state);
 	int GetState() {
@@ -43,4 +43,7 @@ public:
 		level = l;
 	}
 	int GetLevel() { return level; }
+	float GetX() {
+		return x;
+	}
 };

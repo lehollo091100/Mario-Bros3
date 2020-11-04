@@ -73,6 +73,7 @@ public:
 	void SetHealth(int h) {
 		health = h;
 	}
+	float GetX() { return x; }
 	int GetHealth() { return health; }
 	void RenderBoundingBox();
 	virtual void SetDirection(int d) { nx = d;}

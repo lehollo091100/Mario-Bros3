@@ -419,7 +419,7 @@
 # type	x	y	ani_set_id	width	height	extra_settings per object type
 # type: 0 = Mario , 1 = Brick, 2 = Goomba,6=Koopas ,4 = Color brick,5=PIPE
 # MARIO
-0	550.0	300	1	16	32
+0	500.0	300	1	16	32
 
 # GOOMBA
 2	100	300	3	16	16
