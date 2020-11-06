@@ -12,6 +12,7 @@
 #include "Portal.h"
 #include "Sprites.h"
 #include "Koopas.h"
+#include "QuestionBrick.h"
 
 CMario::CMario(float x, float y) : CGameObject()
 {
@@ -57,10 +58,30 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 	vector<LPCOLLISIONEVENT> coEvents;
 	vector<LPCOLLISIONEVENT> coEventsResult;
-
+	/*vector<LPGAMEOBJECT> ListBrick;
+	ListBrick.clear();
+	for (int i = 0; i < coObjects->size(); i++)
+	{
+		if (coObjects->at(i)->GetType() == GType::BRICK || coObjects->at(i)->GetType() == GType::COLORBRICK || coObjects->at(i)->GetType() == GType::QUESTIONBRICK)
+		{
+			ListBrick.push_back(coObjects->at(i));
+		}
+	}
 	coEvents.clear();
+	float min_tx, min_ty, nx = 0, ny;
+	float rdx = 0;
+	float rdy = 0;
+	CalcPotentialCollisions(&ListBrick, coEvents);
+	FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nx, ny, rdx, rdy);*/
+
+	// block every object first!
+	//x += min_tx * dx + nx * 0.6f;
+	//y += min_ty * dy + ny * 0.4f;
+	coEvents.clear();
+	coEventsResult.clear();
 	DWORD now = GetTickCount64();
 	time = now - startfly;
+	//DebugOut(L"TIME:%d\n",time);
 	if (IsAttacking && now - LastimeAttack > 470 && level == MARIO_LEVEL_TAIL)
 	{
 		IsAttacking = false;
@@ -251,6 +272,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		int posObjx = 0;
 		int posObjy = 0;
 
+
 		// TODO: This is a very ugly designed function!!!!
 		FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nx, ny, rdx, rdy);
 
@@ -259,7 +281,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		y += min_ty * dy + ny * 0.4f;
 
 		if (min_tx != 1 && min_ty != 1 && coEventsResult[1]->obj->GetType() == GType::BRICK) {
-			DebugOut(L"line 247 coevent = brick\n");
+			//DebugOut(L"line 247 coevent = brick\n");
 			IsOnGround = true;
 		}
 		/*if (nx != 0) {
@@ -267,15 +289,18 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				state = MARIO_STATE_IDLE;
 		}*/
 		//if (ny != 0) vy = 0;
-		if (ny == -1) if (!IsJumping && !IsFlying) { vy = 0; DebugOut(L"Oh no \n"); }
+		if (ny == -1) if (!IsJumping && !IsFlying) { vy = 0; }
 		// Collision logic with other objects
+
 		for (UINT i = 0; i < coEventsResult.size(); i++)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
 			if (e->nx != 0) {
-				DebugOut(L"%d\n", nx);
+				//DebugOut(L"%d\n", nx);
 				//colorbrick
-				if (e->obj->GetType() == GType::COLORBRICK) { x += dx; }
+				if (e->obj->GetType() == GType::COLORBRICK) {
+					x += dx;
+				}
 
 				//brick
 				if (e->obj->GetType() == GType::BRICK) {
@@ -298,16 +323,44 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				{
 					//if (e->nx != 0) {
 
-						if (e->obj->GetState() == KOOPAS_STATE_WALKING)
-						{
-							//DebugOut(L"LINE 296 DIE NX!=0");
-							SetState(MARIO_STATE_DIE);
-						}
-						if (e->obj->GetState() == KOOPAS_STATE_DEFEND)
-						{
-							e->obj->SubHealth(1);
-						}
+					if (e->obj->GetState() == KOOPAS_STATE_WALKING)
+					{
+						//DebugOut(L"LINE 296 DIE NX!=0");
+						SetState(MARIO_STATE_DIE);
+					}
+					if (e->obj->GetState() == KOOPAS_STATE_DEFEND)
+					{
+						e->obj->SubHealth(1);
+					}
 					//}
+				}
+				if (e->obj->GetType() == GType::GOOMBA)
+				{
+					
+					if (level == 4 && IsAttacking)
+					{
+						e->obj->SubHealth(1);
+				
+					}
+					else
+					{
+						if (e->obj->GetHealth() == 1) {
+							SetState(MARIO_STATE_DIE);
+
+						}
+					}
+				}
+				if (e->obj->GetType() == GType::ITEM)
+				{
+					if (e->obj->GetState() == 0)
+					{
+						if (level == 1) {
+							y -= MARIOTAIL_BBOX_TAIL;
+							SetLevel(2);
+						}
+						e->obj->SubHealth(1);
+					}
+
 				}
 			}
 			/*else if(nx==0){
@@ -315,10 +368,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					if (e->nx != 0&&e->obj->GetState()==KOOPAS_STATE_WALKING)
 						SetState(MARIO_STATE_DIE);
 			}*/
-			if (e->obj->GetType() == GType::KOOPAS)
-			{
-				DebugOut(L"e->ny%f\n", e->ny);
-			}
+
 			if (e->ny != 0) {
 				if (e->obj->GetType() == GType::COLORBRICK) {
 					if (e->ny == 1) {
@@ -326,6 +376,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						//KO XAY RA CHUYEN GI
 					}
 					else {
+						
 						IsOnGround = true;
 						if (IsFalling) {
 							IsFalling = false;
@@ -372,6 +423,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						}
 					}
 					else {
+						
 						IsOnGround = true;
 						if (IsFalling) {
 							IsFalling = false;
@@ -380,7 +432,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 							}
 							else
 								if (!IsSitting) {
-									DebugOut(L"line 348 IDLE\n");
+									//DebugOut(L"line 348 IDLE\n");
 									state = MARIO_STATE_IDLE;
 								}
 						}
@@ -405,13 +457,13 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				}
 				if (e->obj->GetType() == GType::KOOPAS)
 				{
-					DebugOut(L"e->ny%f\n", e->ny);
-					if (e->ny < 0 )
+					//DebugOut(L"e->ny%f\n", e->ny);
+					if (e->ny < 0)
 					{
-						DebugOut(L"line 407");
+						//DebugOut(L"line 407");
 						if (e->obj->GetState() == KOOPAS_STATE_WALKING)
 						{
-							DebugOut(L"Line 411 set state walking");
+							//DebugOut(L"Line 411 set state walking");
 							e->obj->SubHealth(1);
 							vy -= MARIO_DIE_DEFLECT_SPEED;
 						}
@@ -425,7 +477,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 								e->nx = 1;
 							}*/
 							e->obj->SubHealth(1);
-							DebugOut(L"Line 404 set state attack");
+							//DebugOut(L"Line 404 set state attack");
 							vy -= MARIO_DIE_DEFLECT_SPEED;
 							//SweptAABBEx(e->obj);
 						}
@@ -441,6 +493,80 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						{
 							return;
 						}
+					}
+				}
+				if (e->obj->GetType() == GType::GOOMBA)
+				{
+					if (e->ny < 0)
+					{
+						if (e->obj->GetState() == GOOMBA_STATE_WALKING)
+						{
+							vy -= MARIO_DIE_DEFLECT_SPEED;
+							e->obj->SubHealth(1);
+							//e->obj->IsDie = true;
+						}
+					}
+				}
+				if (e->obj->GetType() == GType::QUESTIONBRICK) {
+					if (e->ny == 1) {
+						if (vy < 0) {
+							Gravity = 0;
+							vy += 0.005f;
+							if (e->obj->GetState() != BRICK_STATE_NOTHINGLEFT)
+								e->obj->SetState(BRICK_STATE_COLISSION);
+						}
+						if (IsJumping) {
+							IsJumping = false;
+							IsFalling = true;
+							/*if (!IsSitting)
+								DebugOut(L"mario line 323 jump\n");*/
+							state = MARIO_STATE_FALLING;
+						}
+					}
+					else {
+						
+						IsOnGround = true;
+						if (IsFalling) {
+							IsFalling = false;
+							if (vx != 0) {
+								state = MARIO_STATE_WALKING;
+							}
+							else
+								if (!IsSitting) {
+									//DebugOut(L"line 348 IDLE\n");
+									state = MARIO_STATE_IDLE;
+								}
+						}
+						if (IsFallSlow)
+						{
+							IsFallSlow = false;
+							vx = nx * MARIO_WALKING_SPEED;
+							state = MARIO_STATE_WALKING;
+						}
+						if (IsFlyup)
+							IsFlyup = false;
+						IsJumping = false;
+						IsFlying = false;
+						if (IsFallfly)
+						{
+							IsWalking = true;
+							state = MARIO_STATE_WALKING;
+							vx = nx * MARIO_WALKING_SPEED;
+							IsFallfly = false;
+						}
+					}
+				}
+				if (e->obj->GetType() == GType::ITEM)
+				{
+
+					if (e->obj->GetState() == 0)
+					{
+						if (level == 1) {
+							y -= MARIOTAIL_BBOX_TAIL;
+							SetLevel(2);
+
+						}
+						e->obj->SubHealth(1);
 					}
 				}
 			}
@@ -904,6 +1030,8 @@ void CMario::SetState(int state)
 		break;
 	case MARIO_STATE_UP:
 	{
+		if (!IsOnGround && !IsJumping && !IsFlying&&IsFalling)
+			return;
 		//DebugOut(L"line 787 Mario : Up\n");
 		if (IsOnGround) {
 			//DebugOut(L"line 789 Mario : On ground\n");
@@ -945,7 +1073,7 @@ void CMario::SetState(int state)
 				if (IsFlying)
 				{
 					//DebugOut(L"fly\n");
-					if (time <= 3000)
+					if (time <= 4000)
 					{
 
 						//IsFlying = true;

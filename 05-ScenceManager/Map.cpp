@@ -44,7 +44,7 @@ void Map::Drawmap()
 			r.top = (IdFrame - 1) / TexCol * FrameH;
 			r.right = r.left + FrameW;
 			r.bottom = r.top + FrameH;
-			//CGame::GetInstance()->Draw(j * FrameW , i * FrameH , tex,r.left, r.top, r.right, r.bottom);
+			CGame::GetInstance()->Draw(j * FrameW , i * FrameH , tex,r.left, r.top, r.right, r.bottom);
 		}
 		//DebugOut(L"\n");
 	}

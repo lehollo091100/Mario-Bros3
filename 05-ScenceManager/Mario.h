@@ -175,7 +175,6 @@ public:
 	virtual void Render();
 
 	void SetState(int state);
-	
 	void SetLevel(int l) {
 		if (level == 1) {
 			y -= MARIO_BIG_BBOX_HEIGHT - MARIO_SMALL_BBOX_HEIGHT;
@@ -201,6 +200,20 @@ public:
 		level = l;
 	}
 	int GetLevel() { return level; };
+	void LevelUp()
+	{
+		if (level == 1)
+			y -=10;
+		if(level<4)
+			level++;
+		
+	}
+	void SubLevel()
+	{
+		if (level > 1)
+			level--;
+
+	}
 	void SetIsFalling(bool f)
 	{
 		IsFalling = f;

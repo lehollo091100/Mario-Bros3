@@ -139,7 +139,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	float y = atof(tokens[2].c_str());
 
 	int ani_set_id = atoi(tokens[3].c_str());
-
+	
 	CAnimationSets * animation_sets = CAnimationSets::GetInstance();
 
 	CGameObject *obj = NULL;
@@ -186,6 +186,11 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		W = atoi(tokens[4].c_str());
 		H = atoi(tokens[5].c_str());
 		obj = new ColorBrick(W, H);
+		break;
+	}
+	case GType::QUESTIONBRICK: {
+		int hitem = atoi(tokens[6].c_str());
+		obj = new CQuestionBrick(hitem);
 		break;
 	}
 	default:
@@ -262,7 +267,24 @@ void CPlayScene::Update(DWORD dt)
 	vector<LPGAMEOBJECT> coObjects;
 	for (size_t i = 1; i < objects.size(); i++)
 	{
-		coObjects.push_back(objects[i]);
+		if (objects[i]->IsDie != true) {
+			coObjects.push_back(objects[i]);
+			if(objects[i]->GetType()==GType::QUESTIONBRICK&&(objects[i]->GetState()== BRICK_STATE_NOTHINGLEFT))
+			{
+				if (objects[i]->HiddenItem != -1) {
+					CItem *item = new CItem(objects[i]->HiddenItem);
+					DebugOut(L"hiddenitem %d\n", objects[i]->HiddenItem);
+					objects[i]->HiddenItem = -1;
+					float qx, qy;
+					objects[i]->GetPosition(qx, qy);
+					item->SetPosition(qx, qy - 17);
+					CAnimationSets * animation_sets = CAnimationSets::GetInstance();
+					LPANIMATION_SET ani_set = animation_sets->Get(7);
+					item->SetAnimationSet(ani_set);
+					objects.push_back(item);
+				}
+			}
+		}
 	}
 
 	for (size_t i = 0; i < objects.size(); i++)

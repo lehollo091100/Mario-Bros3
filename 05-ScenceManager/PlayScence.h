@@ -9,6 +9,8 @@
 #include "Koopas.h"
 #include "Map.h"
 #include "ColorBrick.h"
+#include "QuestionBrick.h"
+#include "Item.h"
 
 
 class CPlayScene : public CScene

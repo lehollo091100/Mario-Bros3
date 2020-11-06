@@ -42,9 +42,6 @@
     <ClCompile Include="Portal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MarioGeneral.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Mario.cpp">
       <Filter>Player</Filter>
     </ClCompile>
@@ -81,8 +78,14 @@
     <ClCompile Include="Fire.cpp">
       <Filter>Object</Filter>
     </ClCompile>
+    <ClCompile Include="QuestionBrick.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
     <ClCompile Include="ColorBrick.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Item.cpp">
+      <Filter>Object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -96,9 +99,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Portal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MarioGeneral.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Mario.h">
@@ -140,8 +140,14 @@
     <ClInclude Include="Fire.h">
       <Filter>Object</Filter>
     </ClInclude>
+    <ClInclude Include="QuestionBrick.h">
+      <Filter>Object</Filter>
+    </ClInclude>
     <ClInclude Include="ColorBrick.h">
-      <Filter>Header Files</Filter>
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Item.h">
+      <Filter>Object</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

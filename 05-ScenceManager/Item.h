@@ -1,4 +1,3 @@
-#pragma once
 #include "GameObject.h"
 #include "Utils.h"
 
@@ -14,7 +13,7 @@
 #define GOOMBA_ANI_WALKING 0
 #define GOOMBA_ANI_DIE 1
 
-class CGoomba : public CGameObject
+class CItem : public CGameObject
 {
 	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects);
@@ -23,7 +22,8 @@ class CGoomba : public CGameObject
 	int time;
 
 public:
-	bool IsWalking,Isdie;
-	CGoomba();
+	bool IsWalking, Isdie;
+	CItem(int s);
 	virtual void SetState(int state);
 };
+

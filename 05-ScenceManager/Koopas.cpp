@@ -18,14 +18,23 @@ CKoopas::CKoopas(int range)
 
 void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
-	DebugOut(L"2:%f\n", vx);
-	//if (health <= 0)
-	//	return;
-	//float cam_x = CGame::GetInstance()->GetCamX();
-	//float cam_w = CGame::GetInstance()->GetScreenWidth();
-	////out cam
-	//if (x > cam_x + cam_w || x < cam_x)
-	//	health = 0;
+	
+	//DebugOut(L"2:%f\n", vx);
+	if (health <= 0)
+	{
+		IsDie = true;
+	}
+	if (IsDie)
+		return;
+	
+	float cam_x = CGame::GetInstance()->GetCamX();
+	float cam_w = CGame::GetInstance()->GetScreenWidth();
+	//out cam
+	if(IsAttacking){
+	if (x > cam_x + cam_w || x < cam_x||x<0)
+		health = 0;
+		DebugOut(L"OUT CAM LINE 31 KOOPAS\n");
+	}
 	if (health == 3)
 	{
 		//DebugOut(L"HEAL =3\n");
@@ -64,7 +73,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			SetState(KOOPAS_STATE_ATTACK);
 		//DebugOut(L"health==1 line 56 \n");
 	}
-	DebugOut(L"%d\n", state);
+	//DebugOut(L"%d\n", state);
 	if (IsWalking)
 	{
 		state = KOOPAS_STATE_WALKING;
@@ -131,19 +140,27 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			}
 			if (state == KOOPAS_STATE_ATTACK)
 			{
-				if (e->obj->GetType() == GType::BRICK) {
-					if (e->nx != 0)
+				if (e->nx != 0) {
+					if (e->obj->GetType() == GType::BRICK) {
+						
+							this->nx = -this->nx;
+							vx = this->nx * KOOPAS_ATTACK_SPEED;
+							//DebugOut(L"%f\n", vx);
+						
+						
+					}
+					if (e->obj->GetType() == GType::GOOMBA)
 					{
-						this->nx = -this->nx;
-						vx = this->nx * KOOPAS_ATTACK_SPEED;
-						DebugOut(L"%f\n", vx);
+						
+							e->obj->SubHealth(1);
+						
 					}
-					else {
-						x += dx;
-					}
+					else { x += dx; }
 				}
 			}
-
+			/*else {
+				x += dx;
+			}*/
 			//if (e->obj->GetType() == GType::COLORBRICK)
 			//{
 			//	if (nx != 0)
@@ -167,6 +184,8 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 void CKoopas::Render()
 {
+	if (health==0)
+		return;
 	int ani = KOOPAS_ANI_WALKING_LEFT;
 	if (state == KOOPAS_STATE_DEFEND || state == KOOPAS_STATE_ATTACK) {
 		ani = KOOPAS_ANI_DIE;

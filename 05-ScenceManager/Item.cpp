@@ -1,21 +1,26 @@
-#include "Goomba.h"
-CGoomba::CGoomba()
+#include "Item.h"
+
+CItem::CItem(int s)
 {
 	SetState(GOOMBA_STATE_WALKING);
 	SetHealth(1);
-	type = GType::GOOMBA;
+	type = GType::ITEM;
 	nx = -1;
 	vx = nx * GOOMBA_WALKING_SPEED;
 	Isdie = false;
 	//IsWalking = true;
 	time = 0;
+	state = s;
+	
 }
 
 
-void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
+void CItem::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
-	if (health < 0)
-		IsDie=true;
+	if (health == 0)
+		IsDie = true;
+	if (IsDie)
+		return;
 	CGameObject::Update(dt, coObjects);
 	vy += 0.015f * dt;
 
@@ -33,9 +38,9 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	//x += dx;
 	//y += dy;
 
-	DebugOut(L"time:%d\n",time);
+	DebugOut(L"time:%d\n", time);
 	if (IsWalking) {
-		state = GOOMBA_STATE_WALKING;
+		//state = GOOMBA_STATE_WALKING;
 		if (nx == -1)
 			if (x <= 0)
 			{
@@ -57,22 +62,14 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		{
 			//DebugOut(L"line 50\n");
 			IsWalking = false;
-			SetState(GOOMBA_STATE_DIE);
 		}
 	}
 	if (Isdie)
 	{
 		vx = 0;
-		state = GOOMBA_STATE_DIE;
-		if (time <= 30)
-		{
-			time++;
-		}
-		else {
-			SubHealth(1);
-		}
+		//state = GOOMBA_STATE_DIE;
 	}
-	
+
 
 
 	CalcPotentialCollisions(coObjects, coEvents);
@@ -116,22 +113,16 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
 }
 
-void CGoomba::Render()
+void CItem::Render()
 {
-	if (time>30)
-	{
+	if (IsDie)
 		return;
-	}
-	int ani = GOOMBA_ANI_WALKING;
-	if (state == GOOMBA_STATE_DIE) {
-		ani = GOOMBA_ANI_DIE;
-	}
-	animation_set->at(ani)->Render(x, y);
+	animation_set->at(state)->Render(x, y);
 
 	RenderBoundingBox();
 }
 
-void CGoomba::SetState(int state)
+void CItem::SetState(int state)
 {
 	CGameObject::SetState(state);
 	switch (state)
@@ -147,7 +138,7 @@ void CGoomba::SetState(int state)
 		//vx = -GOOMBA_WALKING_SPEED;
 	}
 }
-void CGoomba::GetBoundingBox(float &left, float &top, float &right, float &bottom)
+void CItem::GetBoundingBox(float &left, float &top, float &right, float &bottom)
 {
 	left = x;
 	top = y;
@@ -158,3 +149,4 @@ void CGoomba::GetBoundingBox(float &left, float &top, float &right, float &botto
 	else
 		bottom = y + GOOMBA_BBOX_HEIGHT;
 }
+

@@ -57,11 +57,12 @@ public:
 	int nx;
 
 	int state;
-
+	bool IsDie;
 	DWORD dt;
 
 	LPANIMATION_SET animation_set;
 	int health;
+	int HiddenItem;
 
 public:
 	void SetPosition(float x, float y) { this->x = x, this->y = y; }
@@ -74,11 +75,14 @@ public:
 		health = h;
 	}
 	float GetX() { return x; }
-	int GetHealth() { return health; }
+	int GetHealth() { return this->health; }
 	void RenderBoundingBox();
 	virtual void SetDirection(int d) { nx = d;}
 	void SetAnimationSet(LPANIMATION_SET ani_set) { animation_set = ani_set; }
 	GType GetType() { return type; }
+	void SetType(GType t) {
+		type = t;
+	}
 	LPCOLLISIONEVENT SweptAABBEx(LPGAMEOBJECT coO);
 	void CalcPotentialCollisions(vector<LPGAMEOBJECT> *coObjects, vector<LPCOLLISIONEVENT> &coEvents);
 	void FilterCollision(
