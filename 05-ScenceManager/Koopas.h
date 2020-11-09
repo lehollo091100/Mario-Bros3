@@ -2,6 +2,7 @@
 
 #include "GameObject.h"
 #include "Game.h"
+#include "Mario.h"
 
 
 #define KOOPAS_WALKING_SPEED 0.03f
@@ -31,8 +32,9 @@ class CKoopas : public CGameObject
 
 public:
 	int level;
-	bool IsWalking,IsAttacking,IsDefending;
-	CKoopas(int range = 50 );
+	bool IsWalking,IsAttacking,IsDefending,IsHeld;
+	CMario* mario;
+	CKoopas(CMario *m ,int range=50 );
 	virtual void SetState(int state);
 	int GetState() {
 		return state;

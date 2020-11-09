@@ -1,6 +1,6 @@
 #include "Koopas.h"
 #include "Utils.h"
-CKoopas::CKoopas(int range)
+CKoopas::CKoopas(CMario *m, int range )
 {
 	this->range = range;
 	SetState(KOOPAS_STATE_WALKING);
@@ -12,6 +12,7 @@ CKoopas::CKoopas(int range)
 	IsDefending = false;
 	level = KOOPAS_LEVEL_NORMAL;
 	IsWalking = true;
+	mario = m;
 }
 
 
@@ -24,7 +25,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	{
 		IsDie = true;
 	}
-	if (IsDie)
+	if (IsDie||IsHeld)
 		return;
 	
 	float cam_x = CGame::GetInstance()->GetCamX();
@@ -33,7 +34,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	if(IsAttacking){
 	if (x > cam_x + cam_w || x < cam_x||x<0)
 		health = 0;
-		DebugOut(L"OUT CAM LINE 31 KOOPAS\n");
+		//DebugOut(L"OUT CAM LINE 31 KOOPAS\n");
 	}
 	if (health == 3)
 	{
@@ -73,6 +74,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			SetState(KOOPAS_STATE_ATTACK);
 		//DebugOut(L"health==1 line 56 \n");
 	}
+	
 	//DebugOut(L"%d\n", state);
 	if (IsWalking)
 	{
@@ -82,6 +84,8 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	{
 		state = KOOPAS_STATE_DEFEND;
 		vx = 0;
+		///vy = 0;
+		DebugOut(L"%f\n",y);
 	}
 	if (IsAttacking)
 	{

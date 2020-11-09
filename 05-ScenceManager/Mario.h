@@ -33,6 +33,8 @@
 #define MARIO_STATE_FALLINFLY			1302
 #define MARIO_STATE_UP					1400
 #define MARIO_STATE_FIRE			1201
+#define MARIO_STATE_HOLDTURTLE		1202
+#define MARIO_STATE_HOLDTUTLE_WALK	1203
 
 #define MARIO_ANI_BIG_IDLE_RIGHT		0
 #define MARIO_ANI_BIG_IDLE_LEFT			1
@@ -121,7 +123,13 @@
 #define MARIO_ANI_BIG_FALL_RIGHT			72
 #define MARIO_ANI_BIG_FALL_LEFT				73
 
-#define MARIO_ANI_DIE				74
+#define MARIO_ANI_BIG_HOLDTURTLE_IDLE_RIGHT	74
+#define MARIO_ANI_BIG_HOLDTURTLE_IDLE_LEFT	75
+#define MARIO_ANI_BIG_HOLDTURTLE_WALK_RIGHT	76
+#define MARIO_ANI_BIG_HOLDTURTLE_WALK_LEFT	77
+
+
+#define MARIO_ANI_DIE				78
 
 #define	MARIO_LEVEL_SMALL	1
 #define	MARIO_LEVEL_BIG		2
@@ -157,6 +165,7 @@ public:
 	bool IsFlyup;
 	bool IsFallfly;
 	bool IsOnGround;
+	bool IsHolding;
 	int nxbackup;
 	float Gravity;
 	DWORD RollbackDt;
@@ -165,9 +174,8 @@ public:
 	DWORD LastimeAttack;
 	DWORD startfly;
 	int time;
-
 	float vx_backup;
-
+	CGameObject* koo=NULL ;
 
 public:
 	CMario(float x = 0.0f, float y = 0.0f);

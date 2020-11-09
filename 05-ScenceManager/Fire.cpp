@@ -59,11 +59,12 @@ void Fire::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		if (nx != 0) {
 			//destroy
 			state = 2;
-			health--;
+			x += dx;
+			//health--;
 		}
 		if (ny != 0) {
 			//bounding
-			vy = ny *0.25f;
+			vy = ny *0.2f;
 		}
 		//
 		// Collision logic with other objects
@@ -72,9 +73,10 @@ void Fire::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
 			//subhealth
-			if (e->obj->GetType() != BRICK) {
+			if (e->obj->GetType() !=GType::BRICK ) {
 				e->obj->SubHealth(1);
 			}
+			
 		}
 	}
 	// clean up collision events

@@ -11,7 +11,7 @@ class Map
 	int TexRow, TexCol, MapRow, MapCol;
 	UINT TexW, TexH;
 	int mapId;
-	int map[100][100];
+	int map[100][200];
 	char* FileName;
 	string MapLink;
 	int nMap;

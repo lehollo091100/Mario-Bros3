@@ -33,12 +33,14 @@ CMario::CMario(float x, float y) : CGameObject()
 	Fire *f1 = new Fire(1);
 	LstWeapon.push_back(f1);
 	IsOnGround = true;
+	koo = new CKoopas(NULL);
 }
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
 	/*if (state == MARIO_STATE_SIT)
 		DebugOut(L"line 39 state sit\n");*/
+	DebugOut(L"vx%f\n",vx);
 	if (x < CGame::GetInstance()->GetCamX())
 		x = CGame::GetInstance()->GetCamX();
 	// Calculate dx, dy 
@@ -244,11 +246,41 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		DebugOut(L"line 219 Sitting\n");
 		state = MARIO_STATE_SIT;
 	}
-
 	if (IsDie)
 	{
 		state = MARIO_STATE_DIE;
 	}
+	//if (IsHolding)
+	//{
+	//	//state = MARIO_STATE_HOLDTURTLE;
+	//}
+	if (!IsHolding && dynamic_cast<CKoopas*>(koo)->IsHeld == true) {
+		//koo->IsHeld = false;
+		//koo = NULL;
+		dynamic_cast<CKoopas*>(koo)->IsHeld = false;
+		state = MARIO_STATE_IDLE;
+		if (dynamic_cast<CKoopas*>(koo)->GetState() == KOOPAS_STATE_DEFEND)
+		{
+			dynamic_cast<CKoopas*>(koo)->nx = this->nx;
+			dynamic_cast<CKoopas*>(koo)->SetState(KOOPAS_STATE_ATTACK);
+		}
+	}
+	if (IsHolding&&dynamic_cast<CKoopas*>(koo)->IsHeld)
+	{
+		if (IsWalking)
+		{
+			state = MARIO_STATE_HOLDTUTLE_WALK;
+		}
+		else
+		{
+			state = MARIO_STATE_HOLDTURTLE;
+		}
+		if (nx > 0)
+			koo->SetPosition(this->x + 15, this->y + 5);
+		if (nx < 0)
+			koo->SetPosition(this->x - 15, this->y + 5);
+	}
+
 	// reset untouchable timer if untouchable time has passed
 	if (GetTickCount() - untouchable_start > MARIO_UNTOUCHABLE_TIME)
 	{
@@ -304,7 +336,8 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 				//brick
 				if (e->obj->GetType() == GType::BRICK) {
-					if (!IsWalking)
+					vx = this->nx*0.01f;
+					if (!IsWalking) {
 						if (!IsSitting) {
 							//DebugOut(L"line 277 IDLE\n");
 							state = MARIO_STATE_IDLE;
@@ -313,6 +346,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						{
 							state = MARIO_STATE_SIT;
 						}
+					}
 					if (!IsFlying) {
 						IsOnGround = true;
 
@@ -323,24 +357,39 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				{
 					//if (e->nx != 0) {
 
+
 					if (e->obj->GetState() == KOOPAS_STATE_WALKING)
 					{
 						//DebugOut(L"LINE 296 DIE NX!=0");
 						SetState(MARIO_STATE_DIE);
 					}
-					if (e->obj->GetState() == KOOPAS_STATE_DEFEND)
+					if (e->obj->GetState() == KOOPAS_STATE_DEFEND && IsHolding == false)
 					{
+
+						//koo->IsHeld = false;
+						e->obj->nx = this->nx;
 						e->obj->SubHealth(1);
+
 					}
+					if (IsHolding && e->obj->GetState() == KOOPAS_STATE_DEFEND)
+					{
+
+						//state = MARIO_STATE_HOLDTURTLE;
+						dynamic_cast<CKoopas*>(e->obj)->IsHeld = true;
+						koo = dynamic_cast<CKoopas*>(e->obj);
+						//DebugOut(L"STILL HOLD\n");
+						//koo->IsHeld = true;
+					}
+
 					//}
 				}
 				if (e->obj->GetType() == GType::GOOMBA)
 				{
-					
+
 					if (level == 4 && IsAttacking)
 					{
 						e->obj->SubHealth(1);
-				
+
 					}
 					else
 					{
@@ -376,7 +425,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						//KO XAY RA CHUYEN GI
 					}
 					else {
-						
+
 						IsOnGround = true;
 						if (IsFalling) {
 							IsFalling = false;
@@ -423,7 +472,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						}
 					}
 					else {
-						
+
 						IsOnGround = true;
 						if (IsFalling) {
 							IsFalling = false;
@@ -465,17 +514,17 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						{
 							//DebugOut(L"Line 411 set state walking");
 							e->obj->SubHealth(1);
-							vy -= MARIO_DIE_DEFLECT_SPEED;
+							vy -= MARIO_DIE_DEFLECT_SPEED / 2;
 						}
 						if (e->obj->GetState() == KOOPAS_STATE_DEFEND) {
-							/*if (x >= e->obj->GetX() + (KOOPAS_BBOX_WIDTH / 2))
+							if (this->x >= e->obj->GetX() + (KOOPAS_BBOX_WIDTH / 2))
 							{
-								e->nx = -1;
+								e->obj->nx = -1;
 							}
-							else if (x < e->obj->GetX() + (KOOPAS_BBOX_WIDTH / 2))
+							else if (this->x < e->obj->GetX() + (KOOPAS_BBOX_WIDTH / 2))
 							{
-								e->nx = 1;
-							}*/
+								e->obj->nx = 1;
+							}
 							e->obj->SubHealth(1);
 							//DebugOut(L"Line 404 set state attack");
 							vy -= MARIO_DIE_DEFLECT_SPEED;
@@ -524,7 +573,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						}
 					}
 					else {
-						
+
 						IsOnGround = true;
 						if (IsFalling) {
 							IsFalling = false;
@@ -601,6 +650,20 @@ void CMario::Render()
 				ani = MARIO_ANI_BIG_IDLE_RIGHT;
 			else
 				ani = MARIO_ANI_BIG_IDLE_LEFT;
+			if (state==MARIO_STATE_HOLDTURTLE)
+			{
+				if (nx > 0)
+					ani = MARIO_ANI_BIG_HOLDTURTLE_IDLE_RIGHT;
+				if (nx < 0)
+					ani = MARIO_ANI_BIG_HOLDTURTLE_IDLE_LEFT;
+			}
+			if (state==MARIO_STATE_HOLDTUTLE_WALK)
+			{
+				if (nx > 0)
+					ani = MARIO_ANI_BIG_HOLDTURTLE_WALK_RIGHT;
+				if (nx < 0)
+					ani = MARIO_ANI_BIG_HOLDTURTLE_WALK_LEFT;
+			}
 			if (state == MARIO_STATE_WALKING_RIGHT)
 				ani = MARIO_ANI_BIG_WALKING_RIGHT;
 			if (state == MARIO_STATE_WALKING_LEFT)
@@ -688,6 +751,7 @@ void CMario::Render()
 				ani = MARIOTAIL_ANI_IDLE_RIGHT;
 			else
 				ani = MARIOTAIL_ANI_IDLE_LEFT;
+
 			if (state == MARIO_STATE_WALKING_RIGHT)
 				ani = MARIOTAIL_ANI_WALK_RIGHT;
 			if (state == MARIO_STATE_WALKING_LEFT)
@@ -1090,9 +1154,18 @@ void CMario::SetState(int state)
 						IsFlyup = false;
 						IsFallSlow = true;
 						//DebugOut(L"Fly fall slow");
-						vx -= 0.02f;
-						if (vx <= 0.03f)
-							vx = 0.03f;
+						if (nx > 0) {
+
+							vx -= 0.02f;
+							if (vx <= 0.03f)
+								vx = 0.03f;
+						}
+						else if (nx < 0)
+						{
+							vx += 0.02f;
+							if (vx <= -0.03f)
+								vx = -0.03f;
+						}
 						//IsFalling = true;
 					}
 				}
@@ -1128,6 +1201,9 @@ void CMario::SetState(int state)
 			//IsDie = false;
 			//this->state = MARIO_STATE_IDLE;
 		}
+		break;
+	case MARIO_STATE_HOLDTURTLE:
+		IsHolding = true;
 		break;
 	default:
 		break;

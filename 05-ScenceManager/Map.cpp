@@ -34,9 +34,10 @@ void Map::Drawmap()
 	int FrameW = TexW / TexCol;
 	int FrameH = TexH / TexRow;
 	//DebugOut(L"%d %d \n", FrameW, FrameH);
+	//DebugOut(L"Row%dcol%d\n",MapRow,MapCol);
 	for (int i = 0; i < MapRow; i++)
 	{
-		for (int j = 0; j < MapCol/2; j++)
+		for (int j = 0; j < MapCol; j++)
 		{
 			int IdFrame = map[i][j];
 			int h = i * FrameH;
@@ -46,7 +47,7 @@ void Map::Drawmap()
 			r.bottom = r.top + FrameH;
 			CGame::GetInstance()->Draw(j * FrameW , i * FrameH , tex,r.left, r.top, r.right, r.bottom);
 		}
-		//DebugOut(L"\n");
+		
 	}
 }
 void Map::SetMap(int Id)
@@ -55,7 +56,7 @@ void Map::SetMap(int Id)
 	string TexLink;
 	ifstream ifs("MapInfo.txt", ios::in);
 	ifs >> nMap;
-	DebugOut(L"nMap%d\n", nMap);
+	//DebugOut(L"nMap%d\n", nMap);
 	if (Id > nMap)
 		return;
 	for (int i = 0; i < mapId; i++)
@@ -66,7 +67,7 @@ void Map::SetMap(int Id)
 		//ifs >> MapRow >> MapColumn;
 		ifs >> TexLink;
 		ifs >> TexRow >> TexCol;
-		DebugOut(L"%d%d%s\n", TexCol, TexRow, TexLink);
+		//DebugOut(L"%d%d%s\n", TexCol, TexRow, TexLink);
 		
 	}
 	//Lay texture tu linktex

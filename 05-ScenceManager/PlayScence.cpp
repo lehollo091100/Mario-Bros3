@@ -139,7 +139,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	float y = atof(tokens[2].c_str());
 
 	int ani_set_id = atoi(tokens[3].c_str());
-	
+
 	CAnimationSets * animation_sets = CAnimationSets::GetInstance();
 
 	CGameObject *obj = NULL;
@@ -173,7 +173,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CBrick(W, H);
 		break;
 	}
-	case GType::KOOPAS: obj = new CKoopas(); break;
+	case GType::KOOPAS: obj = new CKoopas(player); break;
 	case OBJECT_TYPE_PORTAL:
 	{
 		float r = atof(tokens[4].c_str());
@@ -269,7 +269,7 @@ void CPlayScene::Update(DWORD dt)
 	{
 		if (objects[i]->IsDie != true) {
 			coObjects.push_back(objects[i]);
-			if(objects[i]->GetType()==GType::QUESTIONBRICK&&(objects[i]->GetState()== BRICK_STATE_NOTHINGLEFT))
+			if (objects[i]->GetType() == GType::QUESTIONBRICK && (objects[i]->GetState() == BRICK_STATE_NOTHINGLEFT))
 			{
 				if (objects[i]->HiddenItem != -1) {
 					CItem *item = new CItem(objects[i]->HiddenItem);
@@ -303,7 +303,7 @@ void CPlayScene::Update(DWORD dt)
 	cx -= game->GetScreenWidth() / 2;
 	cy -= game->GetScreenHeight() / 2;
 
-	CGame::GetInstance()->SetCamPos(cx, 280 /*cy*/);
+	CGame::GetInstance()->SetCamPos(cx, 250 /*cy*/);
 }
 
 void CPlayScene::Render()
@@ -391,10 +391,10 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 		return;
 	if (game->IsKeyDown(DIK_DOWN))
 	{
-		if ((!mario->IsWalking)||!mario->IsRunning)
+		if ((!mario->IsWalking) || !mario->IsRunning)
 		{
 
-		mario->SetState(MARIO_STATE_SIT);
+			mario->SetState(MARIO_STATE_SIT);
 		}
 	}
 	if (game->IsKeyDown(DIK_RIGHT)) {
@@ -411,7 +411,12 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 		if (mario->IsWalking)
 		{
 			mario->SetState(MARIO_STATE_RUNNING);
+
 		}
+	}
+	if (game->IsKeyDown(DIK_Z))
+	{
+		mario->IsHolding = true;
 	}
 }
 void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
@@ -472,6 +477,13 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 			break;
 		}
 		//break;
+	case DIK_Z:
+		if (mario->IsHolding)
+		{
+			mario->IsHolding = false;
+			DebugOut(L"line 482 playscene\n");
+			break;
+		}
 	}
 
 }
