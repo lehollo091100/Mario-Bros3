@@ -34,13 +34,14 @@ CMario::CMario(float x, float y) : CGameObject()
 	LstWeapon.push_back(f1);
 	IsOnGround = true;
 	koo = new CKoopas(NULL);
+	time1 = 0;
 }
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
 	/*if (state == MARIO_STATE_SIT)
 		DebugOut(L"line 39 state sit\n");*/
-	DebugOut(L"vx%f\n",vx);
+		//DebugOut(L"vx%f\n",vx);
 	if (x < CGame::GetInstance()->GetCamX())
 		x = CGame::GetInstance()->GetCamX();
 	// Calculate dx, dy 
@@ -149,7 +150,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 							vx = 0;
 							IsWalking = false;
 							if (!IsSitting) {
-								DebugOut(L"line 126 IDLE\n");
+								//DebugOut(L"line 126 IDLE\n");
 								state = MARIO_STATE_IDLE;
 							}
 						}
@@ -191,7 +192,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 							vx = 0;
 							IsWalking = false;
 							if (!IsSitting) {
-								DebugOut(L"line 167 IDLE\n");
+								//DebugOut(L"line 167 IDLE\n");
 								state = MARIO_STATE_IDLE;
 							}
 						}
@@ -243,7 +244,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	}
 	if (IsSitting)
 	{
-		DebugOut(L"line 219 Sitting\n");
+		//DebugOut(L"line 219 Sitting\n");
 		state = MARIO_STATE_SIT;
 	}
 	if (IsDie)
@@ -279,6 +280,19 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			koo->SetPosition(this->x + 15, this->y + 5);
 		if (nx < 0)
 			koo->SetPosition(this->x - 15, this->y + 5);
+	}
+	if (IsKicking)
+	{
+		if (time1 <= 10)
+		{
+			state = MARIO_STATE_KICKTURTLE;
+			time1++;
+		}
+		else
+		{
+			IsKicking = false;
+			state = MARIO_STATE_IDLE;
+		}
 	}
 
 	// reset untouchable timer if untouchable time has passed
@@ -367,6 +381,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					{
 
 						//koo->IsHeld = false;
+						IsKicking = true;
 						e->obj->nx = this->nx;
 						e->obj->SubHealth(1);
 
@@ -434,7 +449,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 							}
 							else
 								if (!IsSitting) {
-									DebugOut(L"line 302 IDLE\n");
+									//DebugOut(L"line 302 IDLE\n");
 									state = MARIO_STATE_IDLE;
 								}
 						}
@@ -650,19 +665,29 @@ void CMario::Render()
 				ani = MARIO_ANI_BIG_IDLE_RIGHT;
 			else
 				ani = MARIO_ANI_BIG_IDLE_LEFT;
-			if (state==MARIO_STATE_HOLDTURTLE)
+			if (state == MARIO_STATE_HOLDTURTLE)
 			{
 				if (nx > 0)
 					ani = MARIO_ANI_BIG_HOLDTURTLE_IDLE_RIGHT;
 				if (nx < 0)
 					ani = MARIO_ANI_BIG_HOLDTURTLE_IDLE_LEFT;
 			}
-			if (state==MARIO_STATE_HOLDTUTLE_WALK)
+			if (state == MARIO_STATE_HOLDTUTLE_WALK)
 			{
 				if (nx > 0)
 					ani = MARIO_ANI_BIG_HOLDTURTLE_WALK_RIGHT;
 				if (nx < 0)
 					ani = MARIO_ANI_BIG_HOLDTURTLE_WALK_LEFT;
+			}
+			if (state == MARIO_STATE_KICKTURTLE)
+			{
+				DebugOut(L"ANI line 670\n");
+				if (nx > 0)
+					ani = MARIO_ANI_BIG_KICK_RIGHT;
+				if (nx < 0)
+				{
+					ani = MARIO_ANI_BIG_KICK_LEFT;
+				}
 			}
 			if (state == MARIO_STATE_WALKING_RIGHT)
 				ani = MARIO_ANI_BIG_WALKING_RIGHT;
@@ -714,7 +739,7 @@ void CMario::Render()
 			}
 			if (state == MARIO_STATE_FALLINFLY)
 			{
-				DebugOut(L"FALLFLY ANI");
+				//DebugOut(L"FALLFLY ANI");
 				if (nx > 0)
 					ani = MARIOBIG_ANI_FLYRIGHT;
 				else if (nx < 0)
@@ -1204,6 +1229,11 @@ void CMario::SetState(int state)
 		break;
 	case MARIO_STATE_HOLDTURTLE:
 		IsHolding = true;
+		break;
+	case MARIO_STATE_KICKTURTLE:
+		//IsKicking = true;
+		this->state = MARIO_STATE_KICKTURTLE;
+		DebugOut(L"KICK\n");
 		break;
 	default:
 		break;

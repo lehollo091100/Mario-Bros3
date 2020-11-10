@@ -145,7 +145,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			if (state == KOOPAS_STATE_ATTACK)
 			{
 				if (e->nx != 0) {
-					if (e->obj->GetType() == GType::BRICK) {
+					if (e->obj->GetType() == GType::BRICK|| e->obj->GetType() == GType::QUESTIONBRICK) {
 						
 							this->nx = -this->nx;
 							vx = this->nx * KOOPAS_ATTACK_SPEED;

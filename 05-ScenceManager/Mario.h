@@ -35,6 +35,7 @@
 #define MARIO_STATE_FIRE			1201
 #define MARIO_STATE_HOLDTURTLE		1202
 #define MARIO_STATE_HOLDTUTLE_WALK	1203
+#define MARIO_STATE_KICKTURTLE		1204
 
 #define MARIO_ANI_BIG_IDLE_RIGHT		0
 #define MARIO_ANI_BIG_IDLE_LEFT			1
@@ -128,8 +129,11 @@
 #define MARIO_ANI_BIG_HOLDTURTLE_WALK_RIGHT	76
 #define MARIO_ANI_BIG_HOLDTURTLE_WALK_LEFT	77
 
-
-#define MARIO_ANI_DIE				78
+#define MARIO_ANI_BIG_KICK_RIGHT		78
+#define MARIO_ANI_BIG_KICK_LEFT		79
+#define MARIO_ANI_WHITE_KICK_RIGHT		80
+#define MARIO_ANI_WHITE_KICK_LEFT		81
+#define MARIO_ANI_DIE				82
 
 #define	MARIO_LEVEL_SMALL	1
 #define	MARIO_LEVEL_BIG		2
@@ -155,6 +159,7 @@ public:
 	float start_x;			// initial position of Mario at scene
 	float start_y;
 	int ani;
+	int time1;
 	vector<LPGAMEOBJECT> LstWeapon;
 public:
 	bool IsWalkingR, IsWalkingL, IsRunning, IsSitting, IsRollback, IsSlowDown, IsFalling, IsMaxspeed, IsAttacking,IsDie;
@@ -165,7 +170,7 @@ public:
 	bool IsFlyup;
 	bool IsFallfly;
 	bool IsOnGround;
-	bool IsHolding;
+	bool IsHolding,IsKicking;
 	int nxbackup;
 	float Gravity;
 	DWORD RollbackDt;
