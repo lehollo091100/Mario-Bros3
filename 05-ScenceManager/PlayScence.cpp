@@ -193,6 +193,14 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CQuestionBrick(hitem);
 		break;
 	}
+	case GType::PIPE:
+	{
+		int W, H;
+		W = atoi(tokens[4].c_str());
+		H = atoi(tokens[5].c_str());
+		obj = new CPipe(W, H);
+		break;
+	}
 	default:
 		DebugOut(L"[ERR] Invalid object type: %d\n", object_type);
 		return;

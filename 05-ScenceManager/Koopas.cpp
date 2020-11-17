@@ -65,6 +65,9 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	{
 		//SetLevel(KOOPAS_LEVEL_DEFEND);
 		IsWalking == false;
+		IsAttacking = false;
+		//DebugOut(L"line 68\n");
+		vx = 0;
 		SetState(KOOPAS_STATE_DEFEND);
 	}
 	if (health == 1)
@@ -145,10 +148,10 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			if (state == KOOPAS_STATE_ATTACK)
 			{
 				if (e->nx != 0) {
-					if (e->obj->GetType() == GType::BRICK|| e->obj->GetType() == GType::QUESTIONBRICK) {
-						
+					if (e->obj->GetType() == GType::BRICK|| e->obj->GetType() == GType::QUESTIONBRICK || e->obj->GetType() == GType::PIPE) {
+						x -= -(this->nx) * 0.04f;
 							this->nx = -this->nx;
-							vx = this->nx * KOOPAS_ATTACK_SPEED;
+							this->vx = this->nx * KOOPAS_ATTACK_SPEED;
 							//DebugOut(L"%f\n", vx);
 						
 						

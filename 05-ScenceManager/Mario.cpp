@@ -263,7 +263,8 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		if (dynamic_cast<CKoopas*>(koo)->GetState() == KOOPAS_STATE_DEFEND)
 		{
 			dynamic_cast<CKoopas*>(koo)->nx = this->nx;
-			dynamic_cast<CKoopas*>(koo)->SetState(KOOPAS_STATE_ATTACK);
+			dynamic_cast<CKoopas*>(koo)->SubHealth(1);
+			//dynamic_cast<CKoopas*>(koo)->SetState(KOOPAS_STATE_ATTACK);
 		}
 	}
 	if (IsHolding&&dynamic_cast<CKoopas*>(koo)->IsHeld)
@@ -348,8 +349,8 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					x += dx;
 				}
 
-				//brick
-				if (e->obj->GetType() == GType::BRICK) {
+				//brick or pipe
+				if (e->obj->GetType() == GType::BRICK|| e->obj->GetType() == GType::PIPE) {
 					vx = this->nx*0.01f;
 					if (!IsWalking) {
 						if (!IsSitting) {
@@ -472,7 +473,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						}
 					}
 				}
-				if (e->obj->GetType() == GType::BRICK) {
+				if (e->obj->GetType() == GType::BRICK|| e->obj->GetType() == GType::PIPE) {
 					if (e->ny == 1) {
 						if (vy < 0) {
 							Gravity = 0;
@@ -544,6 +545,11 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 							//DebugOut(L"Line 404 set state attack");
 							vy -= MARIO_DIE_DEFLECT_SPEED;
 							//SweptAABBEx(e->obj);
+						}
+						if (e->obj->GetState() == KOOPAS_STATE_ATTACK)
+						{
+							e->obj->PlusHealth(1);
+							vy -= MARIO_DIE_DEFLECT_SPEED;
 						}
 					}
 					else if (e->ny > 0)
@@ -1154,7 +1160,7 @@ void CMario::SetState(int state)
 				if (IsJumping) {
 					if (vy > 0) {
 						if (!IsFallSlow) {
-							Gravity = -0.0006f;
+							Gravity = -GRAVITY_FALLSLOW1;
 							IsFallSlow = true;
 						}
 					}
@@ -1175,7 +1181,7 @@ void CMario::SetState(int state)
 					else
 					{
 						//IsFlying = false;
-						Gravity = -0.00075f;
+						Gravity = -GRAVITY_FALLSLOW;
 						IsFlyup = false;
 						IsFallSlow = true;
 						//DebugOut(L"Fly fall slow");

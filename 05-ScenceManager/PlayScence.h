@@ -11,6 +11,7 @@
 #include "ColorBrick.h"
 #include "QuestionBrick.h"
 #include "Item.h"
+#include "Pipe.h"
 
 
 class CPlayScene : public CScene

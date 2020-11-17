@@ -105,6 +105,7 @@ void CItem::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				if (e->obj->GetType() == GType::GOOMBA)
 				{
 					x += dx;
+					//y += dy;
 				}
 			}
 

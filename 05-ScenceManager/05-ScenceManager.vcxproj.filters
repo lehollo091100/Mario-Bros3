@@ -87,6 +87,9 @@
     <ClCompile Include="Item.cpp">
       <Filter>Object</Filter>
     </ClCompile>
+    <ClCompile Include="Pipe.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -147,6 +150,9 @@
       <Filter>Object</Filter>
     </ClInclude>
     <ClInclude Include="Item.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Pipe.h">
       <Filter>Object</Filter>
     </ClInclude>
   </ItemGroup>

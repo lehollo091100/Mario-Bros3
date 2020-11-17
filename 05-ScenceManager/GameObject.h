@@ -71,6 +71,9 @@ public:
 	void GetSpeed(float &vx, float &vy) { vx = this->vx; vy = this->vy; }
 	int GetState() { return this->state; }
 	void SubHealth(int dm) { health -= dm; }
+	void PlusHealth(int dm) {
+		health += dm;
+	}
 	void SetHealth(int h) {
 		health = h;
 	}

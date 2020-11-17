@@ -9,21 +9,21 @@ void Map::ReadMap()
 		{
 			ifs >>map[i][j];
 		}
-	int noBj;//so loai Obj
-	ifs >> noBj;
-	for (int i = 0; i < noBj; i++)
-	{
-		int Type;//day la loai Ojb (luu trong file txt)
-		ifs >> Type;
-		int nofType;//so luong cua loai Obj
-		ifs >>nofType;
-		for (int j = 0; j < nofType; j++)
-		{
-			int idObj, xObj, yObj, anisetid,  width, height;
-			int objHiden, left, right, top, bot;
-			ifs >> idObj >> xObj >> yObj >> width >> height >> objHiden >> left >> right >> top >> bot;
-		}
-	}
+	//int noBj;//so loai Obj
+	//ifs >> noBj;
+	//for (int i = 0; i < noBj; i++)
+	//{
+	//	int Type;//day la loai Ojb (luu trong file txt)
+	//	ifs >> Type;
+	//	int nofType;//so luong cua loai Obj
+	//	ifs >>nofType;
+	//	for (int j = 0; j < nofType; j++)
+	//	{
+	//		int idObj, xObj, yObj, anisetid,  width, height;
+	//		int objHiden, left, right, top, bot;
+	//		ifs >> idObj >> xObj >> yObj >> width >> height >> objHiden >> left >> right >> top >> bot;
+	//	}
+	//}
 	ifs.close();
 
 }
