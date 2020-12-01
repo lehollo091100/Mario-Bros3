@@ -201,6 +201,11 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CPipe(W, H);
 		break;
 	}
+	case GType::FIREPIRAHAPLANT:
+	{
+		obj = new FirePirahaPlant();
+		break;
+	}
 	default:
 		DebugOut(L"[ERR] Invalid object type: %d\n", object_type);
 		return;

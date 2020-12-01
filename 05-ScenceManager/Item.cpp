@@ -38,7 +38,7 @@ void CItem::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	//x += dx;
 	//y += dy;
 
-	DebugOut(L"time:%d\n", time);
+	//DebugOut(L"time:%d\n", time);
 	if (IsWalking) {
 		//state = GOOMBA_STATE_WALKING;
 		if (nx == -1)

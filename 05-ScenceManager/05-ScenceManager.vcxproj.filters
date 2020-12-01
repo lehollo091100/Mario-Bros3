@@ -90,6 +90,9 @@
     <ClCompile Include="Pipe.cpp">
       <Filter>Object</Filter>
     </ClCompile>
+    <ClCompile Include="FirePirahaPlant.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -153,6 +156,9 @@
       <Filter>Object</Filter>
     </ClInclude>
     <ClInclude Include="Pipe.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="FirePirahaPlant.h">
       <Filter>Object</Filter>
     </ClInclude>
   </ItemGroup>

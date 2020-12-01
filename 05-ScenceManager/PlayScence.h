@@ -12,6 +12,7 @@
 #include "QuestionBrick.h"
 #include "Item.h"
 #include "Pipe.h"
+#include"FirePirahaPlant.h"
 
 
 class CPlayScene : public CScene

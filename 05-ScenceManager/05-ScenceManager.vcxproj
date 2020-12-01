@@ -128,6 +128,7 @@
     <ClCompile Include="Brick.cpp" />
     <ClCompile Include="ColorBrick.cpp" />
     <ClCompile Include="Fire.cpp" />
+    <ClCompile Include="FirePirahaPlant.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="Koopas.cpp" />
     <ClCompile Include="Map.cpp" />
@@ -151,6 +152,7 @@
     <ClInclude Include="Brick.h" />
     <ClInclude Include="ColorBrick.h" />
     <ClInclude Include="Fire.h" />
+    <ClInclude Include="FirePirahaPlant.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="Koopas.h" />
     <ClInclude Include="Map.h" />
