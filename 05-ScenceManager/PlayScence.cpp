@@ -162,7 +162,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		}
 		obj = new CMario(x, y);
 		player = (CMario*)obj;
-
 		DebugOut(L"[INFO] Player object created!\n");
 		break;
 	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(); break;
@@ -203,7 +202,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	}
 	case GType::FIREPIRAHAPLANT:
 	{
-		obj = new FirePirahaPlant();
+		obj = new FirePirahaPlant(player);
 		break;
 	}
 	default:
@@ -298,6 +297,7 @@ void CPlayScene::Update(DWORD dt)
 				}
 			}
 		}
+		//DebugOut(L"playerx:%f\n", player->x);
 	}
 
 	for (size_t i = 0; i < objects.size(); i++)

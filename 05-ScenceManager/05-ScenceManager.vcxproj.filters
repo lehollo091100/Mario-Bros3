@@ -93,6 +93,9 @@
     <ClCompile Include="FirePirahaPlant.cpp">
       <Filter>Object</Filter>
     </ClCompile>
+    <ClCompile Include="FireBullet.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -159,6 +162,9 @@
       <Filter>Object</Filter>
     </ClInclude>
     <ClInclude Include="FirePirahaPlant.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="FireBullet.h">
       <Filter>Object</Filter>
     </ClInclude>
   </ItemGroup>

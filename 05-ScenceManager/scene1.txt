@@ -256,7 +256,7 @@
 #open mouth down right
 70007	336	75	351	108	50
 #close mouth down right
-70008	297	37	313	70	50
+70008	299	37	314	70	50
 
 
 # ani_id	sprite1_id	time1	sprite2_id	time2	...
@@ -470,6 +470,14 @@
 302	70007	100	70008	100	70007	100	70008	100
 #downleft
 303	70003	100	70004	100	70003	100	70004	100
+#upidle right
+304	70005	100
+#upidle left
+305	70001	100
+#downidle right
+306	70007	100
+#downidle left
+307	70003	100
 
 #
 # id	ani1	ani2	ani3
@@ -490,13 +498,13 @@
 #Item
 7	900
 #firepirahaplant
-5	300	301	302	303
+5	300	301	302	303	304	305	306	307
 
 [OBJECTS]
 # type	x	y	ani_set_id	width	height	extra_settings per object type
 # type: 0 = Mario , 1 = Brick, 2 = Goomba,3 = FirePirahaPlant,4 = Color brick, 5 = PIPE, 6 = Koopas, 7 = questionbrick,8 = item
 # MARIO
-0	370.0	300	1	16	32
+0	320.0	300	1	16	32
 
 # GOOMBA
 #2	100	300	3	16	16
@@ -505,7 +513,7 @@
 # KOOPAS
 6	550	300	6	17	29
 # FIREPIRAHAPLANT
-3	358	367	5	19	35
+3	358	368	5	19	35
 
 # BRICK 
 # --- platform (hint: I created the list using Excel!) ----

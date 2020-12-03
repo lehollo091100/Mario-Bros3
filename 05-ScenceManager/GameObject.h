@@ -104,7 +104,7 @@ public:
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects = NULL);
 	virtual void Render() = 0;
 	virtual void SetState(int state) { this->state = state; }
-	void GetEnemyPos(float eX, float eY) { EnemyX = eX; EnemyY = eY; }
+	
 
 	~CGameObject();
 };

@@ -1,10 +1,17 @@
 #include "GameObject.h"
 #include "Utils.h"
-
+#include "Mario.h"
+#include "FireBullet.h"
+#define BULLETVY_NEAR	0.03f
+#define BULLETVY_FAR	0.01f
 #define FIREPIRAHAPLANT_ANI_UPRIGHT		0
 #define FIREPIRAHAPLANT_ANI_UPLEFT		1
 #define FIREPIRAHAPLANT_ANI_DOWNRIGHT		2
 #define FIREPIRAHAPLANT_ANI_DOWNLEFT	3
+#define FIREPIRAHAPLANT_ANI_UPIDLERIGHT	4
+#define FIREPIRAHAPLANT_ANI_UPIDLELEFT	5
+#define FIREPIRAHAPLANT_ANI_DOWNIDLERIGHT	6
+#define FIREPIRAHAPLANT_ANI_DOWNIDLELEFT	7
 
 #define FIREPIRAHAPLANT_WIDTH	18
 #define FIREPIRAHAPLANT_HEIGHT	35
@@ -27,32 +34,30 @@ public:
 	DWORD StopTime;
 	int count;
 	float startY;
+	float marioX, marioY;
+	CMario* m;
+	int numberBullet;
+	bool canAttack;
+	float bulletvx, bulletvy;
+	int bulletnx;
+	vector<LPGAMEOBJECT> Lstbullet;
 public:
-	FirePirahaPlant()
+	FirePirahaPlant(CMario *mario)
 	{
+		
 		type:GType::FIREPIRAHAPLANT;
 		IsHidden = true;
 		IsAttacking = false;
 		IsMoving = false;
 		ny = 1;
-		
+		m = mario;
 		//vy = -FIREPIRANHAPLANT_SPEED_Y;
 	};
 	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects);
 	virtual void Render(); 
 	virtual void SetState(int state);
-	void CalAttackZone() {
-		if (abs(x - EnemyX) <= FIREPIRANHAPLANT_MAXX_ATK && abs(y - EnemyY) <= FIREPIRANHAPLANT_MAXY_ATK)
-		{
-			if (!IsAttacking)
-				count = 1;
-			IsInZone = true;
-		}
-		else
-		{
-			IsInZone = false;
-		}
-	}
-
+	void CalAttackZone();
+	void CalAttackPos();
+	
 };

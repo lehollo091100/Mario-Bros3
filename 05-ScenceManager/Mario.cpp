@@ -1074,7 +1074,7 @@ void CMario::SetState(int state)
 		{
 			if (LstWeapon[0]->GetHealth() <= 0)
 			{
-				LstWeapon[0]->SetHealth(1);
+				LstWeapon[0]->SetHealth(1);	
 				LstWeapon[0]->SetPosition(x + 10, y + 5);
 				LstWeapon[0]->SetDirection(nx);
 				LastimeAttack = GetTickCount64();
@@ -1239,7 +1239,7 @@ void CMario::SetState(int state)
 	case MARIO_STATE_KICKTURTLE:
 		//IsKicking = true;
 		this->state = MARIO_STATE_KICKTURTLE;
-		DebugOut(L"KICK\n");
+		//DebugOut(L"KICK\n");
 		break;
 	default:
 		break;

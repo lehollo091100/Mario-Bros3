@@ -4,61 +4,47 @@
 
 void FirePirahaPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	DebugOut(L"startY:%f\n", startY);
+	//DebugOut(L"y:%f\n", y);
+	//DebugOut(L"startY:%f\n", startY);
+	DebugOut(L"bulletvy:%f\n", bulletvy);
 	if (startY == 0)
 		startY = y;
-	
+	//DebugOut(L"MARIOX:%f\n", marioX);
 	vector<LPCOLLISIONEVENT> coEvents;
 	vector<LPCOLLISIONEVENT> coEventsResult;
 	coEvents.clear();
 	//DebugOut(L"vy%f\n:", vy);
-	
-	if (vy != 0) {
-		if (startY - y >= 35)
-		{
 
+	//DebugOut(L"VY:%f\n", vy);
+	CalAttackPos();
+	if (startY - y >= 31)
+	{
+		if (vy < 0) {
 			if (IsMoving && !IsAttacking)
 			{
 				vy = 0;
 				IsAttacking = true;
 				IsMoving = false;
+				//DebugOut(L"line 25");
 			}
 		}
 	}
-	if (vy != 0) {
-		if (y >= startY+35)
-		{
+
+	if (y >= startY)
+	{
+		if (vy > 0) {
 			if (IsMoving && !IsHidden)
 			{
-				DebugOut(L"LINE 33\n");
+				//DebugOut(L"LINE 33\n");
 				vy = 0;
 				IsHidden = true;
 				IsMoving = false;
 			}
 		}
 	}
-	//if (IsMoving)
-	//{
-	//	if (MovingTime == 0)
-	//	{
-	//		MovingTime = GetTickCount64();
-	//	}
-	//	if (GetTickCount64() - MovingTime >= 500)
-	//	{
-	//		MovingTime = 0;
-	//		IsMoving = false;
-	//		vy = 0;
-	//		if (y >= startY)
-	//		{
-	//			IsHidden = true;
-	//		}
-	//		else 
-	//			IsAttacking = true;
-	//	}
-	//}
-	if (IsHidden&&!IsMoving)
-	{
 
+	if (IsHidden && !IsMoving)
+	{
 		if (StopTime == 0)
 		{
 			StopTime = GetTickCount64();
@@ -70,22 +56,26 @@ void FirePirahaPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			vy = -FIREPIRANHAPLANT_SPEED_Y;
 			IsHidden = false;
 			IsMoving = true;
-			DebugOut(L"line 24\n");
 		}
-
 	}
-	DebugOut(L"y:%f\n", y);
 
 	if (IsAttacking && !IsMoving)
 	{
+		//vy = 0;
 		if (AttackTime == 0)
 		{
+			if (IsInZone)
+			{
+				FireBullet* bullet = new FireBullet(bulletnx, bulletvx, bulletvy);
+				Lstbullet.push_back(bullet);
+				SetState(FIREPIRAHAPLANT_ATTACKSTATE);
+			}
 			AttackTime = GetTickCount64();
-			DebugOut(L"Line 44\n");
+			//DebugOut(L"Line 44\n");
 		}
 		if (GetTickCount64() - AttackTime >= 3000)
 		{
-			DebugOut(L"LINE 63");
+			//DebugOut(L"LINE 63");
 			AttackTime = 0;
 			vy = FIREPIRANHAPLANT_SPEED_Y;
 			IsAttacking = false;
@@ -93,45 +83,8 @@ void FirePirahaPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		}
 	}
 
-	DebugOut(L"ATTACKTIME:%d\n", AttackTime);
-	/*if (IsAttacking && AttackTime == 0)
-	{
-		AttackTime = GetTickCount64();
-	}
-	if (IsAttacking && GetTickCount64() - AttackTime >= 2000)
-	{
-		IsAttacking = false;
-		AttackTime = 0;
-	}
-	if (MovingTime == 0)
-	{
-		MovingTime = GetTickCount64();
-	}
-
-	if (startY - y >= MAXHEIGHT_APPEAR)
-	{
-		vy = 0;
-		if (!IsAttacking && GetTickCount64() - MovingTime >= 3000)
-		{
-			SetState(FIREPIRAHAPLANT_HIDDENSTATE);
-			MovingTime = 0;
-		}
-		if (vy <= 0)
-			CalAttackZone();
-	}
-	if (startY - y <= -MAXHEIGHT_HIDDEN)
-	{
-		vy = 0;
-		if (GetTickCount64() - MovingTime >= 3000)
-		{
-			MovingTime = 0;
-			SetState(FIREPIRAHAPLANT_APPEARSTATE);
-		}
-	}*/
-	/*if (y<=startY)
-	{
-		IsHidden = true;
-	}*/
+	//DebugOut(L"ATTACKTIME:%d\n", AttackTime);
+	
 	CGameObject::Update(dt, coObjects);
 	y += dy;
 	CalcPotentialCollisions(coObjects, coEvents);
@@ -151,37 +104,65 @@ void FirePirahaPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		x += min_tx * dx + nx * 0.4f;
 		y += min_ty * dy + ny * 0.4f;
 		//if (nx != 0) vx = 0;
-		if (ny != 0) vy = 0;
+		//if (ny != 0) vy = 0;
 		for (UINT i = 0; i < coEventsResult.size(); i++)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
-
+			/*if (e->obj->GetType() == GType::PIPE)
+			{
+				if (this->vy != 0)
+					y += dy;
+			}*/
 
 		}
 	}
 	for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
+	for (int i = 0; i < Lstbullet.size(); i++) {
+		Lstbullet[i]->Update(dt, coObjects);
+	}
 }
 
 void FirePirahaPlant::Render()
 {
-	int ani =0;
-	if (EnemyX > x)
+	int ani = 0;
+	if (IsMoving == false)
 	{
-		DebugOut(L"Line 130\n");
-		if (EnemyY < y)
-			ani = FIREPIRAHAPLANT_ANI_UPRIGHT;
-		else
-			ani=FIREPIRAHAPLANT_ANI_DOWNRIGHT;
+		if (m->x > x)
+		{
+			//DebugOut(L"Line 130\n");
+			if (m->y < y)
+				ani = FIREPIRAHAPLANT_ANI_UPIDLERIGHT;
+			else
+				ani = FIREPIRAHAPLANT_ANI_DOWNIDLERIGHT;
+		}
+		else if (m->x < x)
+		{
+			//DebugOut(L"Line 136\n");
+			if (m->y < y)
+				ani = FIREPIRAHAPLANT_ANI_UPIDLELEFT;
+			else
+				ani = FIREPIRAHAPLANT_ANI_DOWNIDLELEFT;
+		}
 	}
-	else
-	{
-		DebugOut(L"Line 136\n");
-		if (EnemyY < y)
-			animation_set->at(FIREPIRAHAPLANT_ANI_UPLEFT)->Render(x, y);
-		else
-			animation_set->at(FIREPIRAHAPLANT_ANI_DOWNLEFT)->Render(x, y);
+	if (IsMoving) {
+		if (m->x > x)
+		{
+			//DebugOut(L"Line 130\n");
+			if (m->y < y)
+				ani = FIREPIRAHAPLANT_ANI_UPRIGHT;
+			else
+				ani = FIREPIRAHAPLANT_ANI_DOWNRIGHT;
+		}
+		else if (m->x < x)
+		{
+			//DebugOut(L"Line 136\n");
+			if (m->y < y)
+				ani = FIREPIRAHAPLANT_ANI_UPLEFT;
+			else
+				ani = FIREPIRAHAPLANT_ANI_DOWNLEFT;
+		}
 	}
-	//animation_set->at(ani)->Render(x, y);
+	animation_set->at(ani)->Render(x, y);
 	RenderBoundingBox();
 }
 
@@ -195,6 +176,14 @@ void FirePirahaPlant::SetState(int state)
 	case FIREPIRAHAPLANT_HIDDENSTATE:
 		vy = FIREPIRANHAPLANT_SPEED_Y;
 		break;
+	case FIREPIRAHAPLANT_ATTACKSTATE:
+		if (Lstbullet[0]->GetHealth()==0)
+		{
+			Lstbullet[0]->SetHealth(1);
+			Lstbullet[0]->SetPosition(this->x,this->y);
+			this->state = FIREPIRAHAPLANT_ATTACKSTATE;
+			
+		}break;
 	default:
 		break;
 	}
@@ -208,4 +197,51 @@ void FirePirahaPlant::GetBoundingBox(float & left, float & top, float & right, f
 
 	bottom = y + FIREPIRAHAPLANT_HEIGHT;
 
+}
+void FirePirahaPlant::CalAttackPos()
+{
+	if (m->x > this->x)
+	{
+		bulletvx = 0.05;
+		bulletnx = 1;
+	}
+	else if (m->x < this->x)
+	{
+		bulletvx = -0.05;
+		bulletnx = -1;
+	}
+	if (abs(x-m->x) <=80)
+	{
+		if (m->y>y)
+		{
+			bulletvy = BULLETVY_NEAR;
+		}
+		else
+		{
+			bulletvy = -BULLETVY_NEAR;
+		}
+	}
+	else {
+		if (m->y > y)
+		{
+			bulletvy = BULLETVY_FAR;
+		}
+		else
+		{
+			bulletvy = -BULLETVY_FAR;
+		}
+	}
+
+	
+}
+void FirePirahaPlant::CalAttackZone()
+{
+	if (abs(x - m->x) <= FIREPIRANHAPLANT_MAXX_ATK && abs(y - m->y) <= FIREPIRANHAPLANT_MAXY_ATK)
+	{
+		IsInZone = true;
+	}
+	else
+	{
+		IsInZone = false;
+	}
 }
