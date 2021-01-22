@@ -3,16 +3,27 @@
 class ColorBrick : public CGameObject
 {
 public:
-	int height, width;
+	float height, width;
+	float X;
 
 public:
-	ColorBrick(int W,int H)
+	ColorBrick(float W,float H,float x)
 	{
 		width = W;
 		height = H;
 		type = GType::COLORBRICK;
-		
+		X = x;
+		health = 1;
+		IsMovingObj = false;
 	}
+	float GetWidth() {
+		return width;
+	}
+	float GetXOfColorBrick() {
+		return X;
+	}
+	;
+
 	virtual void Render();
 	virtual void GetBoundingBox(float &l, float &t, float &r, float &b);
 };

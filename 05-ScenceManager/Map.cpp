@@ -1,5 +1,12 @@
 #include "Map.h"
 #include <fstream>
+#include"Utils.h"
+Map *Map::_instance = NULL;
+Map *Map::GetInstance()
+{
+	if (_instance == NULL) _instance = new Map();
+	return _instance;
+}
 void Map::ReadMap()
 {
 	ifstream ifs(MapLink, ios::in);
@@ -52,28 +59,28 @@ void Map::Drawmap()
 }
 void Map::SetMap(int Id)
 {
-	mapId = 1;
+	mapId = Id;
 	string TexLink;
 	ifstream ifs("MapInfo.txt", ios::in);
 	ifs >> nMap;
 	//DebugOut(L"nMap%d\n", nMap);
-	if (Id > nMap)
+	if (mapId > nMap)
 		return;
 	for (int i = 0; i < mapId; i++)
 	{
 		ifs >> MapLink;
-		
+		//DebugOut(L"maplink:%c", MapLink);
 		//ifs >> MapLink;
 		//ifs >> MapRow >> MapColumn;
 		ifs >> TexLink;
 		ifs >> TexRow >> TexCol;
 		//DebugOut(L"%d%d%s\n", TexCol, TexRow, TexLink);
-		
 	}
 	//Lay texture tu linktex
 	LPCSTR FName = TexLink.c_str();
 	D3DXIMAGE_INFO info;
 	HRESULT result = D3DXGetImageInfoFromFileA(FName, &info);
+	DebugOut(L"Texlink:%c\n", TexLink.c_str());
 	if (result != D3D_OK)
 	{
 		DebugOut(L"[ERROR] GetImageInfoFromFile failed\n");
@@ -107,3 +114,17 @@ void Map::SetMap(int Id)
 	DebugOut(L"[INFO] Maptile loaded Ok\n");
 	ifs.close();
 }
+
+void Map::Clear()
+{
+	for (int i = 0; i < MapRow; i++)
+	{
+		for (int j = 0; j < MapCol; j++)
+		{
+			map[i][j] = 0;
+		}
+	}
+	TexCol = TexRow = 0;
+}
+
+

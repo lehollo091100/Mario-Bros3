@@ -64,6 +64,8 @@ public:
 	int health;
 	int HiddenItem;
 	float EnemyX, EnemyY;
+	bool IsInGrid;
+	bool IsMovingObj;
 public:
 	void SetPosition(float x, float y) { this->x = x, this->y = y; }
 	void SetSpeed(float vx, float vy) { this->vx = vx, this->vy = vy; }
@@ -77,7 +79,10 @@ public:
 	void SetHealth(int h) {
 		health = h;
 	}
-	float GetX() { return x; }
+	/*void SetX(float x) {
+		this->x = x;
+	}*/
+	float GetX() { return this->x; }
 	int GetHealth() { return this->health; }
 	void RenderBoundingBox();
 	virtual void SetDirection(int d) { nx = d;}
@@ -97,7 +102,7 @@ public:
 		float &ny,
 		float &rdx,
 		float &rdy);
-
+	LPCOLLISIONEVENT isCollisionWithObj(CGameObject* obj);
 	CGameObject();
 
 	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom) = 0;

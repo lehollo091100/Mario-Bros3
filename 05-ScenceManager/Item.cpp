@@ -1,8 +1,8 @@
 #include "Item.h"
 
-CItem::CItem(int s)
+CItem::CItem()
 {
-	SetState(GOOMBA_STATE_WALKING);
+	SetState(ITEM_STATE_WALKING);
 	SetHealth(1);
 	type = GType::ITEM;
 	nx = -1;
@@ -10,8 +10,8 @@ CItem::CItem(int s)
 	Isdie = false;
 	//IsWalking = true;
 	time = 0;
-	state = s;
-	
+	//state = s;
+
 }
 
 
@@ -100,14 +100,13 @@ void CItem::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				this->nx = -this->nx;
 				this->vx = this->nx*GOOMBA_WALKING_SPEED;
 			}
-			if (e->nx != 0)
+			if (e->obj->GetType() == GType::GOOMBA)
 			{
-				if (e->obj->GetType() == GType::GOOMBA)
-				{
+				if(e->nx!=0)
 					x += dx;
-					//y += dy;
-				}
+				//y += dy;
 			}
+			
 
 		}
 	}
@@ -118,8 +117,7 @@ void CItem::Render()
 {
 	if (IsDie)
 		return;
-	animation_set->at(state)->Render(x, y);
-
+	animation_set->at(0)->Render(x, y);
 	RenderBoundingBox();
 }
 
@@ -128,12 +126,12 @@ void CItem::SetState(int state)
 	CGameObject::SetState(state);
 	switch (state)
 	{
-	case GOOMBA_STATE_DIE:
+	case ITEM_STATE_DIE:
 		//diestart = GetTickCount64();
 		//DebugOut(L"state goomba die\n");
 		Isdie = true;
 		break;
-	case GOOMBA_STATE_WALKING:
+	case ITEM_STATE_WALKING:
 		IsWalking = true;
 		break;
 		//vx = -GOOMBA_WALKING_SPEED;
@@ -144,10 +142,6 @@ void CItem::GetBoundingBox(float &left, float &top, float &right, float &bottom)
 	left = x;
 	top = y;
 	right = x + GOOMBA_BBOX_WIDTH;
-
-	if (state == GOOMBA_STATE_DIE)
-		bottom = y + GOOMBA_BBOX_HEIGHT_DIE;
-	else
-		bottom = y + GOOMBA_BBOX_HEIGHT;
+	bottom = y + GOOMBA_BBOX_HEIGHT;
 }
 

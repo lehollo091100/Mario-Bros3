@@ -13,9 +13,11 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath) :
 	CScene(id, filePath)
 {
 	map = new Map();
-	map->SetMap(1);
+	mapid = id;
+	map->SetMap(id);
 	map->ReadMap();
 	key_handler = new CPlayScenceKeyHandler(this);
+	grid = new Grid();
 }
 
 /*
@@ -154,17 +156,43 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	*/
 	switch (object_type)
 	{
-	case OBJECT_TYPE_MARIO:
-		if (player != NULL)
-		{
-			DebugOut(L"[ERROR] MARIO object was created before!\n");
-			return;
-		}
-		obj = new CMario(x, y);
-		player = (CMario*)obj;
-		DebugOut(L"[INFO] Player object created!\n");
+	case GType::PORTAL:
+	{
+		int x1, y1;
+		float r = atof(tokens[4].c_str());
+		float b = atof(tokens[5].c_str());
+		int scene_id = atoi(tokens[6].c_str());
+		x1 = atoi(tokens[7].c_str());
+		y1 = atoi(tokens[8].c_str());
+		//DebugOut(L"nextX%f\n:", x1);
+		obj = new CPortal(x, y, r, b, scene_id, x1, y1);
 		break;
-	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(); break;
+	}
+	case OBJECT_TYPE_MARIO: {
+		//if (player != NULL)
+		//{
+		//	//DebugOut(L"Nx:%f,y:%f", nextX, nextY);
+		//	player = new CMario(x, y);
+		//	CGame::GetInstance()->SetCamPos(player->x, player->y);
+		//	player->SetLevel(levelbackup);
+		//	DebugOut(L"level backup line 176 playscene%d\n:", levelbackup);
+		//	DebugOut(L"[ERROR] MARIO object was created before!\n");
+		//	return;
+		//}
+		player->SetPosition(x, y);
+		CGame::GetInstance()->SetCamPos(player->x, player->y);
+		if (player->NextX != 0 && player->NextY != 0)
+		{
+			player->SetPosition(player->NextX, player->NextY);
+			CGame::GetInstance()->SetCamPos(player->NextX, player->NextY);
+			player->NextX = 0;
+			player->NextY = 0;
+		}
+		DebugOut(L"[INFO] Player object created!\n");
+
+		break;
+	}
+	case GType::GOOMBA: {obj = new CGoomba(); break; }
 	case OBJECT_TYPE_BRICK: {
 		int W, H;
 		W = atoi(tokens[4].c_str());
@@ -173,23 +201,35 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		break;
 	}
 	case GType::KOOPAS: obj = new CKoopas(player); break;
-	case OBJECT_TYPE_PORTAL:
-	{
-		float r = atof(tokens[4].c_str());
-		float b = atof(tokens[5].c_str());
-		int scene_id = atoi(tokens[6].c_str());
-		obj = new CPortal(x, y, r, b, scene_id);
-	}
+	case GType::KOOPASBROWN: obj = new CKoopasBrown(player); break;
+
+	case GType::FLYKOOPAS: obj = new CFlyKoopas(player); break;
 	case GType::COLORBRICK: {
-		int W, H;
+		float W, H;
 		W = atoi(tokens[4].c_str());
 		H = atoi(tokens[5].c_str());
-		obj = new ColorBrick(W, H);
+		obj = new ColorBrick(W, H, x);
 		break;
 	}
 	case GType::QUESTIONBRICK: {
-		int hitem = atoi(tokens[6].c_str());
-		obj = new CQuestionBrick(hitem);
+		int QBrickType = atoi(tokens[6].c_str());
+		obj = new CQuestionBrick(QBrickType);
+		break;
+	}
+
+	case GType::FIREPIRAHAPLANT:
+	{
+		obj = new FirePirahaPlant(player);
+		break;
+	}
+	case GType::FIREGREENPLANT:
+	{
+		obj = new FireGreenPlant(player);
+		break;
+	}
+	case GType::GREENPLANT:
+	{
+		obj = new GreenPlant(player);
 		break;
 	}
 	case GType::PIPE:
@@ -197,12 +237,77 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int W, H;
 		W = atoi(tokens[4].c_str());
 		H = atoi(tokens[5].c_str());
-		obj = new CPipe(W, H);
+		int ani = atoi(tokens[6].c_str());
+		int pipeswitch = atoi(tokens[7].c_str());
+		obj = new CPipe(W, H, ani, pipeswitch);
 		break;
 	}
-	case GType::FIREPIRAHAPLANT:
+	case GType::BROWNCOIN:
 	{
-		obj = new FirePirahaPlant(player);
+		obj = new CBrownCoin();
+		break;
+	}
+	case GType::BROWNLEAF:
+	{
+		obj = new CLeaf();
+		break;
+	}
+	case GType::SHINNINGBRICK:
+	{
+		//int hitem = atoi(tokens[6].c_str());
+		obj = new CShinningBrick();
+		break;
+	}
+	case GType::CPBRICK:
+	{
+		obj = new CPBrick();
+		break;
+	}
+	case GType::NODE:
+	{
+		int W, H, up, down, left, right, scene_id;
+		W = atoi(tokens[4].c_str());
+		H = atoi(tokens[5].c_str());
+		up = atoi(tokens[6].c_str());
+		down = atoi(tokens[7].c_str());
+		left = atoi(tokens[8].c_str());
+		right = atoi(tokens[9].c_str());
+		scene_id = atoi(tokens[10].c_str());
+		obj = new CNode(W, H, up, down, left, right, scene_id);
+		break;
+	}
+	case GType::REDGOOMBA:
+	{
+		obj = new RedGoomba();
+		break;
+	}
+	case GType::ENDGAMEITEM:
+	{
+		obj = new EndGameObject();
+		break;
+	}
+	case GType::UPDOWNWOOD:
+	{
+		int W = atoi(tokens[4].c_str());
+		int H = atoi(tokens[5].c_str());
+		obj = new CUpDownWood(W, H);
+		break;
+	}
+	case GType::SHINNINGEXTRABRICK:
+	{
+		int h = atoi(tokens[6].c_str());
+		int t = atoi(tokens[7].c_str());
+		obj = new ShinningExtraBrick(h,t);
+		break;
+	}
+	case GType::TURTLE:
+	{
+		obj = new Turtle();
+		break;
+	}
+	case GType::FLYUPDOWNKOOPAS:
+	{
+		obj = new FlyUpDownKoopas();
 		break;
 	}
 	default:
@@ -211,12 +316,31 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	}
 
 	// General object setup
-	obj->SetPosition(x, y);
+	if (obj != NULL)
+		obj->SetPosition(x, y);
 
 	LPANIMATION_SET ani_set = animation_sets->Get(ani_set_id);
-
-	obj->SetAnimationSet(ani_set);
-	objects.push_back(obj);
+	//-----------------ANIMTION SET FIREE-----------------
+	LPANIMATION_SET ani_set2 = animation_sets->Get(FIRE_ANIMATION_SETS_ID);
+	for (int i = 0; i < 2; i++)
+		player->LstWeapon[i]->SetAnimationSet(ani_set2);
+	player->SetAnimationSet(ani_set);
+	LPANIMATION_SET ani_set1 = animation_sets->Get(HUD_ANIMATION_SETS_ID);
+	hud->SetAnimationSet(ani_set1);
+	if (obj != NULL)
+	{
+		obj->SetAnimationSet(ani_set);
+	}
+	if (obj != NULL) {
+		float l, t, r, b;
+		obj->GetBoundingBox(l, t, r, b);
+		l = (int)(l / 165);
+		t = (int)(t / 120);
+		r = (int)(r / 165);
+		b = (int)(b / 120);
+		grid->push_backGrid(obj, (int)l, (int)t,(int)r, (int)b);
+		//objects.push_back(obj);
+	}
 }
 
 void CPlayScene::Load()
@@ -265,46 +389,214 @@ void CPlayScene::Load()
 	}
 
 	f.close();
-
+	Map::GetInstance()->SetMap(player->NextScene);
+	Map::GetInstance()->ReadMap();
 	CTextures::GetInstance()->Add(ID_TEX_BBOX, L"textures\\bbox.png", D3DCOLOR_XRGB(255, 255, 255));
 
 	DebugOut(L"[INFO] Done loading scene resources %s\n", sceneFilePath);
+	//player->NextScene = NULL;
 }
 
 void CPlayScene::Update(DWORD dt)
 {
+	grid->GetListObj(objects, 335, 224, CGame::GetInstance()->GetCamX(), CGame::GetInstance()->GetCamY());
+	//DebugOut(L"size:%d\n", objects.size());
+	grid->ClearGrid(335,224,CGame::GetInstance()->GetCamX(), CGame::GetInstance()->GetCamY());
 	// We know that Mario is the first object in the list hence we won't add him into the colliable object list
 	// TO-DO: This is a "dirty" way, need a more organized way 
-
+	vector<LPGAMEOBJECT> object2;
 	vector<LPGAMEOBJECT> coObjects;
-	for (size_t i = 1; i < objects.size(); i++)
+	object2.clear();
+	for (size_t i = 0; i < objects.size(); i++)
+	{
+		if (objects[i]->IsDie != true)
+			object2.push_back(objects[i]);
+	}
+	//DebugOut(L"line 298 playscene:%d", objects.size());
+	for (size_t i = 0; i < objects.size(); i++)
 	{
 		if (objects[i]->IsDie != true) {
 			coObjects.push_back(objects[i]);
 			if (objects[i]->GetType() == GType::QUESTIONBRICK && (objects[i]->GetState() == BRICK_STATE_NOTHINGLEFT))
 			{
-				if (objects[i]->HiddenItem != -1) {
-					CItem *item = new CItem(objects[i]->HiddenItem);
-					DebugOut(L"hiddenitem %d\n", objects[i]->HiddenItem);
-					objects[i]->HiddenItem = -1;
-					float qx, qy;
-					objects[i]->GetPosition(qx, qy);
-					item->SetPosition(qx, qy - 17);
-					CAnimationSets * animation_sets = CAnimationSets::GetInstance();
-					LPANIMATION_SET ani_set = animation_sets->Get(7);
-					item->SetAnimationSet(ani_set);
-					objects.push_back(item);
+
+				if (objects[i]->HiddenItem == TYPE_MUSHROOM) {
+					if (objects[i]->HiddenItem != -1) {
+						CItem *item = new CItem();
+						objects[i]->HiddenItem = -1;
+						float qx, qy;
+						objects[i]->GetPosition(qx, qy);
+						item->SetPosition(qx, qy - 17);
+						CAnimationSets * animation_sets = CAnimationSets::GetInstance();
+						LPANIMATION_SET ani_set = animation_sets->Get(7);
+						item->SetAnimationSet(ani_set);
+						objects.push_back(item);
+					}
+				}
+				if (objects[i]->HiddenItem == TYPE_COIN)
+				{
+					player->Coin += 1;
+					player->Point += 100;
+					if (objects[i]->HiddenItem != -1) {
+						CCoinInBrick *item = new CCoinInBrick();
+						objects[i]->HiddenItem = -1;
+						float qx, qy;
+						objects[i]->GetPosition(qx, qy);
+						item->SetPosition(qx, qy - BBOX_16);
+						CAnimationSets * animation_sets = CAnimationSets::GetInstance();
+						LPANIMATION_SET ani_set = animation_sets->Get(12);
+						item->SetAnimationSet(ani_set);
+						objects.push_back(item);
+					}
+				}
+				if (objects[i]->HiddenItem == TYPE_LEAF)
+				{
+					if (objects[i]->HiddenItem != -1) {
+						CLeaf *item = new CLeaf();
+						objects[i]->HiddenItem = -1;
+						float qx, qy;
+						objects[i]->GetPosition(qx, qy);
+						item->SetPosition(qx, qy - BBOX_16);
+						CAnimationSets * animation_sets = CAnimationSets::GetInstance();
+						LPANIMATION_SET ani_set = animation_sets->Get(15);
+						item->SetAnimationSet(ani_set);
+						objects.push_back(item);
+					}
+				}
+
+			}
+			if (objects[i]->GetType() == GType::SHINNINGBRICK && (objects[i]->GetState() == SBRICK_STATE_NOTHINGLEFT))
+			{
+				float qx, qy;
+				objects[i]->GetPosition(qx, qy);
+				objects[i]->SetHealth(0);
+
+				/*if(player->nx>0)
+					player->x -= 7;
+				else
+				{
+					player->x += 5;
+				}*/
+				CBrownCoin *BCoin = new CBrownCoin();
+				BCoin->SetPosition(qx, qy);
+				CAnimationSets * animation_sets = CAnimationSets::GetInstance();
+				LPANIMATION_SET ani_set = animation_sets->Get(12);
+				BCoin->SetAnimationSet(ani_set);
+				objects.push_back(BCoin);
+
+			}
+			if (objects[i]->GetType() == GType::CPBRICK && (objects[i]->GetState() == CPBRICK_STATE_NOTHINGLEFT))
+			{
+				float qx, qy;
+				objects[i]->GetPosition(qx, qy);
+				objects[i]->SetState(CPBRICK_STATE_COLLISION);
+				CPItem *PItem = new CPItem();
+				PItem->SetPosition(qx, qy - NUM_20);
+				objects.push_back(PItem);
+				/*for (size_t i = 0; i < objects.size(); i++) {
+					if (objects[i]->GetType() == GType::SHINNINGBRICK&&objects[i]->GetState() != SBRICK_STATE_NOTHINGLEFT)
+					{
+						objects[i]->SetState(SBRICK_STATE_NOTHINGLEFT);
+					}
+				}*/
+
+			}
+			if (objects[i]->GetType() == GType::PITEM && (objects[i]->GetState() == PITEM_STATE_COLLISION))
+			{
+				for (size_t i = 0; i < objects.size(); i++) {
+					if (objects[i]->GetType() == GType::SHINNINGBRICK&&objects[i]->GetState() != SBRICK_STATE_NOTHINGLEFT)
+					{
+						objects[i]->SetState(SBRICK_STATE_NOTHINGLEFT);
+					}
 				}
 			}
+			if (objects[i]->GetType() == GType::FLYKOOPAS && (objects[i]->GetState() == FLYKOOPAS_STATE_DISAPPEAR))
+			{
+				float a, b;
+				objects[i]->GetPosition(a, b);
+				objects[i]->SubHealth(1);
+				CKoopas *koo = new CKoopas(player);
+				koo->SetPosition(a, b);
+				CAnimationSets * animation_sets = CAnimationSets::GetInstance();
+				LPANIMATION_SET ani_set = animation_sets->Get(6);
+				koo->SetAnimationSet(ani_set);
+				//animation_set->at(ani)->Render(x, y);
+				objects.push_back(koo);
+			}
+			if (objects[i]->GetType()==GType::FLYUPDOWNKOOPAS&&(objects[i]->GetState()==DISAPPEAR_STATE))
+			{
+				float a, b;
+				objects[i]->GetPosition(a, b);
+				objects[i]->SubHealth(1);
+				CKoopas *koo = new CKoopas(player);
+				koo->SetPosition(a, b);
+				CAnimationSets * animation_sets = CAnimationSets::GetInstance();
+				LPANIMATION_SET ani_set = animation_sets->Get(6);
+				koo->SetAnimationSet(ani_set);
+				//animation_set->at(ani)->Render(x, y);
+				objects.push_back(koo);
+			}
+			if (objects[i]->GetType() == GType::SHINNINGEXTRABRICK&&objects[i]->GetState()==EXTRABRICK_STATE_COLLISION)
+			{
+				
+				ShinningExtraBrick* brick = dynamic_cast<ShinningExtraBrick*>(objects[i]);
+				//brick->SetState(EXTRABRICK_STATE_NORMAL);
+				//brick->number -= 1;
+				float qx, qy;
+				brick->GetPosition(qx, qy);
+				if (brick->kind == 1&&brick->number>0)
+				{
+					if (player->z == 0) {
+						player->z += 1;
+						brick->number -= 1;
+						CCoinInBrick *coin = new CCoinInBrick();
+						coin->SetPosition(qx, qy - 32);
+						CAnimationSets * animation_sets = CAnimationSets::GetInstance();
+						LPANIMATION_SET ani_set = animation_sets->Get(12);
+						coin->SetAnimationSet(ani_set);
+						objects.push_back(coin);
+					}
+				}
+				else if (brick->kind == 2&&brick->number>0)
+				{
+					//a += 1;
+					if (player->z == 0) {
+						player->z += 1;
+						brick->number -= 1;
+						CLeaf *leaf = new CLeaf();
+						leaf->SetPosition(qx, qy - 32);
+						CAnimationSets * animation_sets = CAnimationSets::GetInstance();
+						LPANIMATION_SET ani_set = animation_sets->Get(15);
+						leaf->SetAnimationSet(ani_set);
+						objects.push_back(leaf);
+					}
+				}
+				
+			}
 		}
+
 		//DebugOut(L"playerx:%f\n", player->x);
 	}
 
 	for (size_t i = 0; i < objects.size(); i++)
 	{
-		objects[i]->Update(dt, &coObjects);
+		if (objects[i]->IsDie != true)
+		{
+			objects[i]->IsInGrid = false;
+			objects[i]->Update(dt, &coObjects);
+			if (objects[i]->IsMovingObj) {
+				float l, t, r, b;
+				objects[i]->GetBoundingBox(l, t, r, b);
+				l = (int)(l / 165);
+				t = (int)(t / 120);
+				r = (int)(r / 165);
+				b = (int)(b / 120);
+				grid->push_backGrid(objects[i], (int)l, (int)t, (int)r, (int)b);
+			}
+		}
 	}
-
+	player->Update(dt, &coObjects);
+	hud->Update(dt);
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
 	if (player == NULL) return;
 
@@ -314,14 +606,62 @@ void CPlayScene::Update(DWORD dt)
 
 	CGame *game = CGame::GetInstance();
 	cx -= game->GetScreenWidth() / 2;
-	cy -= game->GetScreenHeight() / 2;
+	cy -= game->GetScreenHeight() / (2.25);
+	//if(player->y)
+	hud->SetPoint(player->Point);
+	hud->SetStack(player->stack);
+	hud->SetCoin(player->Coin);
+	if (mapid != 3)
+	{
+		if (player->y > 250)
+		{
+			CGame::GetInstance()->SetCamPos(cx, 265);
+		}
+		else {
+			CGame::GetInstance()->SetCamPos(cx, cy);
+		}
+	}
+	//CGame::GetInstance()->SetCamPos(cx, cy);
+	if (mapid == 3)
+	{
+		CGame::GetInstance()->SetCamPos(-60, 0);
+		player->IsInMap3 = true;
+		player->IsInMap4 = false;
+	}
+	else if (mapid == 4)
+	{
+		CGame::GetInstance()->SetCamPos(3, 35);
+		player->IsInMap4 = true;
+		player->IsInMap3 = false;
+	}
+	else
+	{
+		player->IsInMap3 = false;
+	}
+	if (mapid == 2)
+		CGame::GetInstance()->SetCamPos(cx, cy);
+	if (mapid == 1)
+	{
+		hud->IsInScene1 = true;
+	}
+	if (player->IsPortal == true)
+	{
+		CGame::GetInstance()->SwitchScene(player->NextScene);
 
-	CGame::GetInstance()->SetCamPos(cx, 250 /*cy*/);
+	}
+	if (mapid == 5)
+	{
+		CGame::GetInstance()->SetCamPos(cx, 10);
+	}
 }
 
 void CPlayScene::Render()
 {
 	map->Drawmap();
+	player->Render();
+	if (mapid != 3 && mapid != 4)
+		hud->Render();
+	//player->RenderBoundingBox();
 	for (int i = 0; i < objects.size(); i++)
 		objects[i]->Render();
 }
@@ -331,65 +671,100 @@ void CPlayScene::Render()
 */
 void CPlayScene::Unload()
 {
+	if (player != NULL) {
+		player->IsPortal = false;
+	}
 	for (int i = 0; i < objects.size(); i++)
+	{
 		delete objects[i];
-
+	}
 	objects.clear();
-	player = NULL;
-
+	//int levelbackup;
+	//player = NULL;
+	Map::GetInstance()->Clear();
 	DebugOut(L"[INFO] Scene %s unloaded! \n", sceneFilePath);
 }
 
 void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 {
 
-	DebugOut(L"[INFO] KeyDown: %d\n", KeyCode);
+	//DebugOut(L"[INFO] KeyDown: %d\n", KeyCode);
 	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
-	if (mario->GetState() == MARIO_STATE_DIE)
+	if (mario->GetState() == MARIO_STATE_DIE || mario->IsEndGame == true)
 		return;
 	//DebugOut(L"int: %d\n", mario->IsJumping);
-	switch (KeyCode)
-	{
-	case DIK_R:
-		mario->Reset();
-		break;
-	case DIK_1:
-		mario->SetLevel(MARIO_LEVEL_SMALL);
-		break;
-	case DIK_2:
-		mario->SetLevel(MARIO_LEVEL_BIG);
-		break;
-	case DIK_3:
-	{
-		mario->SetLevel(MARIO_LEVEL_FIRE);
-		break;
-	}
-	case DIK_4:
-	{
-		mario->SetLevel(MARIO_LEVEL_TAIL);
-		break;
-	}
-	case DIK_A:
-	{
-		if (mario->level == MARIO_LEVEL_TAIL)
+	int id = ((CPlayScene*)scence)->GetMapID();
+	if (id != 3 && id != 4) {
+		switch (KeyCode)
 		{
-			mario->SetState(MARIO_STATE_ATTACK_TAIL);
-			mario->LastimeAttack = GetTickCount64();
+		case DIK_R:
+			mario->Reset();
+			break;
+		case DIK_1:
+			mario->SetLevel(MARIO_LEVEL_SMALL);
+			break;
+		case DIK_2:
+			mario->SetLevel(MARIO_LEVEL_BIG);
+			break;
+		case DIK_3:
+		{
+			mario->SetLevel(MARIO_LEVEL_FIRE);
 			break;
 		}
-		else if (mario->level == MARIO_LEVEL_FIRE)
+		case DIK_4:
 		{
-			mario->SetState(MARIO_STATE_FIRE);
+			mario->SetLevel(MARIO_LEVEL_TAIL);
 			break;
 		}
-		break;
+		case DIK_5://SET POSITION(2259,90)
+		{
+			mario->SetPosition(2259, 80);
+			break;
+		}
+		case DIK_6:
+		{
+			mario->SetPosition(1210, 370);
+			break;
+		}
+		case DIK_7:
+		{
+			mario->SetPosition(625, 300);
+			break;
+		}
+		case DIK_A:
+		{
+			if (mario->level == MARIO_LEVEL_TAIL)
+			{
+				mario->SetState(MARIO_STATE_ATTACK_TAIL);
+				mario->LastimeAttack = GetTickCount64();
+				break;
+			}
+			else if (mario->level == MARIO_LEVEL_FIRE)
+			{
+				mario->SetState(MARIO_STATE_FIRE);
+				break;
+			}
+			break;
+		}
+		case DIK_S:
+		{
+			//DebugOut(L"line 352 Press S\n");
+			mario->SetState(MARIO_STATE_UP);
+			break;
+		}
+		}
 	}
-	case DIK_S:
+	if (id == 3 || id == 4)
 	{
-		//DebugOut(L"line 352 Press S\n");
-		mario->SetState(MARIO_STATE_UP);
-		break;
-	}
+		switch (KeyCode)
+		{
+		case DIK_S:
+		{
+			mario->IsPortal = true;
+			mario->SetState(MARIO_STATE_IDLE);
+			break;
+		}
+		}
 	}
 }
 
@@ -398,43 +773,112 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 	CGame *game = CGame::GetInstance();
 
 	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
-
-	// disable control key when Mario die 
-	if (mario->GetState() == MARIO_STATE_DIE)
-		return;
-	if (game->IsKeyDown(DIK_DOWN))
-	{
-		if ((!mario->IsWalking) || !mario->IsRunning)
+	int id = ((CPlayScene*)scence)->GetMapID();
+	//DebugOut(L"id:%d\n", id);
+	if (id != 3 && id != 4) {
+		// disable control key when Mario die
+		if (mario->GetState() == MARIO_STATE_DIE)
+			return;
+		if (game->IsKeyDown(DIK_DOWN))
 		{
+			if (mario->CanPiping == true)
+			{
+				mario->SetState(MARIO_STATE_IN_PIPE);
+			}
+			else if(mario->CanPiping==false)
+			{
+			if ((!mario->IsWalking) || !mario->IsRunning)
+			{
 
-			mario->SetState(MARIO_STATE_SIT);
-		}
-	}
-	if (game->IsKeyDown(DIK_RIGHT)) {
-		mario->nx = 1;
-		mario->SetState(MARIO_STATE_WALKING_RIGHT);
-	}
-	if (game->IsKeyDown(DIK_LEFT))
-	{
-		mario->nx = -1;
-		mario->SetState(MARIO_STATE_WALKING_LEFT);
-	}
-	if (game->IsKeyDown(DIK_A))
-	{
-		if (mario->IsWalking)
-		{
-			mario->SetState(MARIO_STATE_RUNNING);
+				mario->SetState(MARIO_STATE_SIT);
+			}
+			}
 
 		}
+		if (game->IsKeyDown(DIK_UP))
+		{
+			if (mario->CanPiping == true) {
+				if (mario->IsJumping)
+				{
+					//mario->ny = -1;
+					mario->SetState(MARIO_STATE_IN_PIPE);
+				}
+			}
+		}
+		if (game->IsKeyDown(DIK_RIGHT)) {
+			mario->nx = 1;
+			mario->SetState(MARIO_STATE_WALKING_RIGHT);
+		}
+		if (game->IsKeyDown(DIK_LEFT))
+		{
+			mario->nx = -1;
+			mario->SetState(MARIO_STATE_WALKING_LEFT);
+		}
+		if (game->IsKeyDown(DIK_A))
+		{
+			if (mario->IsWalking)
+			{
+				mario->SetState(MARIO_STATE_RUNNING);
+
+			}
+		}
+		if (game->IsKeyDown(DIK_Z))
+		{
+			mario->IsHolding = true;
+		}
 	}
-	if (game->IsKeyDown(DIK_Z))
+	if (id == 3 || id == 4)
 	{
-		mario->IsHolding = true;
+		if (game->IsKeyDown(DIK_DOWN))
+		{
+			if (mario->down == true)
+			{
+				mario->SetState(MARIO_STATE_MOVE_DOWN);
+			}
+			else
+			{
+				return;
+			}
+		}
+		if (game->IsKeyDown(DIK_UP))
+		{
+			if (mario->up == true)
+			{
+				mario->SetState(MARIO_STATE_MOVE_UP);
+			}
+			else
+			{
+				return;
+			}
+		}
+		if (game->IsKeyDown(DIK_RIGHT))
+		{
+			if (mario->right == true)
+			{
+				mario->SetState(MARIO_STATE_MOVE_RIGHT);
+			}
+			else
+			{
+				return;
+			}
+		}
+		if (game->IsKeyDown(DIK_LEFT))
+		{
+			if (mario->left == true)
+			{
+				mario->SetState(MARIO_STATE_MOVE_LEFT);
+			}
+			else
+			{
+				return;
+			}
+		}
+
 	}
 }
 void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 {
-	DebugOut(L"[INFO] KeyUp: %d\n", KeyCode);
+	//DebugOut(L"[INFO] KeyUp: %d\n", KeyCode);
 
 	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
 	//DebugOut(L"int: %d\n", mario->IsJumping);
@@ -479,9 +923,7 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 			mario->IsSitting = false;
 			float mx, my;
 			mario->GetPosition(mx, my);
-			mario->y -= 10;
-			//mario->SetPosition(mx, my - 10);
-			DebugOut(L"line 435 PS IDLE\n");
+			mario->y -= 15;
 			mario->SetState(MARIO_STATE_IDLE);
 			break;
 		}
@@ -494,7 +936,7 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 		if (mario->IsHolding)
 		{
 			mario->IsHolding = false;
-			DebugOut(L"line 482 playscene\n");
+			//DebugOut(L"line 482 playscene\n");
 			break;
 		}
 	}

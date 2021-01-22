@@ -1,4 +1,7 @@
 #include "Fire.h"
+#include "Koopas.h"
+#include "KoopasBrown.h"
+#include"RedGoomba.h"
 
 Fire::Fire(int nx)
 {
@@ -20,14 +23,16 @@ void Fire::GetBoundingBox(float & left, float & top, float & right, float & bott
 
 void Fire::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	if (health <= 0)
+	if (health == 0)
+		return;
+	if (IsDie)
 		return;
 	float cam_x = CGame::GetInstance()->GetCamX();
 	float cam_w = CGame::GetInstance()->GetScreenWidth();
 	//out cam
 	if (x > cam_x + cam_w || x < cam_x)
 		health = 0;
-	CGameObject::Update(dt);
+	CGameObject::Update(dt,coObjects);
 	//DebugOut(L"update");
 	// Simple fall down
 	vy += FIRE_GRAVITY * dt;
@@ -73,8 +78,45 @@ void Fire::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
 			//subhealth
-			if (e->obj->GetType() !=GType::BRICK ) {
+			if (e->obj->GetType()==GType::KOOPAS)
+			{
+				if (e->obj->GetState() == KOOPAS_STATE_WALKING)
+				{
+					e->obj->SubHealth(1);
+					e->obj->SetState(KOOPAS_STATE_DIE_UP);
+				}
+				this->SubHealth(1);
+				
+			}
+			if (e->obj->GetType()==GType::SHINNINGBRICK||e->obj->GetType()==GType::PIPE||e->obj->GetType()==GType::QUESTIONBRICK)
+			{
+				this->SubHealth(1);
+			}
+			if (e->obj->GetType() == GType::GOOMBA)
+			{
 				e->obj->SubHealth(1);
+				this->SubHealth(1);
+			}
+			if ( e->obj->GetType() == GType::GREENPLANT )
+			{
+				e->obj->SubHealth(1);
+				this->health--;
+			}
+			if ( e->obj->GetType() == GType::FIREGREENPLANT)
+			{
+				e->obj->SubHealth(1);
+				this->health--;
+			}
+			if (e->obj->GetType() == GType::FIREPIRAHAPLANT)
+			{
+				e->obj->SubHealth(1);
+				this->health--;
+			}
+			if (e->obj->GetType() == GType::REDGOOMBA)
+			{
+				e->obj->SetHealth(1);
+				e->obj->SetState(REDGOOMBA_STATE_DIE_UP);
+				this->SubHealth(1);
 			}
 			
 		}
@@ -85,11 +127,21 @@ void Fire::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 void Fire::Render()
 {
+	if (animation_set == NULL)
+	{
+		CAnimationSets * animation_sets = CAnimationSets::GetInstance();
+		LPANIMATION_SET ani_set = animation_sets->Get(4);
+		SetAnimationSet(ani_set);
+	}
 	if (health <= 0)
 		return;
-	int ani = FIRE_ANI_SHOOT;
+	else
+	{
+		int ani = FIRE_ANI_SHOOT;
+		
+		animation_set->at(ani)->Render(x, y);
 
-	animation_set->at(ani)->Render(x, y);
+		RenderBoundingBox();
+	}
 
-	RenderBoundingBox();
 }

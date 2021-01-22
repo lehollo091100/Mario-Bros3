@@ -14,6 +14,8 @@ CGameObject::CGameObject()
 	vx = vy = 0;
 	nx = 1;
 	IsDie = false;
+	IsInGrid = false;
+	IsMovingObj = true;
 }
 
 void CGameObject::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
@@ -115,6 +117,51 @@ void CGameObject::FilterCollision(
 	if (min_ix >= 0) coEventsResult.push_back(coEvents[min_ix]);
 }
 
+LPCOLLISIONEVENT CGameObject::isCollisionWithObj(CGameObject * obj)
+{
+	LPCOLLISIONEVENT T= new CCollisionEvent(1.5, 0, 0, 0, 0, obj);
+	//T->t = 1.5;
+
+	if (obj!=NULL)
+	{
+		float l1, l2, b1, b2, r1, r2, t1, t2;
+		this->GetBoundingBox(l1, t1, r1, b1);
+		obj->GetBoundingBox(l2, t2, r2, b2);
+		float nx=0,ny=0;
+		LPCOLLISIONEVENT coEventsResult;
+		LPCOLLISIONEVENT e = SweptAABBEx(obj);
+		bool res = e->t > 0 && e->t <= 1.0f;
+		if(res)
+			return e;
+		else 
+		
+		if (CGame::GetInstance()->IsCollisionAABB(l1, t1, r1, b1, l2, t2, r2, b2))
+		{
+			if (r1<r2)
+			{
+				nx = -1.0;
+			}
+			if (l1>l2)
+			{
+				nx = 1.0;
+			}
+			if (t1 > t2)
+			{
+				ny = 1.0;
+			}
+			if (b1 < b2)
+			{
+				ny = -1.0;
+			}
+			//coEventsResult->t = 0.5;
+			return new CCollisionEvent(0.5,nx,ny,0,0);
+		}
+			//return true;
+		
+	}
+	return T;
+}
+
 
 void CGameObject::RenderBoundingBox()
 {
@@ -131,8 +178,9 @@ void CGameObject::RenderBoundingBox()
 	rect.right = (int)r - (int)l;
 	rect.bottom = (int)b - (int)t;
 
-	//CGame::GetInstance()->Draw(x, y, bbox, rect.left, rect.top, rect.right, rect.bottom, 32);
+	CGame::GetInstance()->Draw(x, y, bbox, rect.left, rect.top, rect.right, rect.bottom, 32);
 }
+
 
 
 CGameObject::~CGameObject()

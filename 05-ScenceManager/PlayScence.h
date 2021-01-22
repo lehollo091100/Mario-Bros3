@@ -13,14 +13,41 @@
 #include "Item.h"
 #include "Pipe.h"
 #include"FirePirahaPlant.h"
-
-
+#include"GreenPlant.h"
+#include"FireGreenPlant.h"
+#include"KoopasBrown.h"
+#include"FlyKoopas.h"
+#include"BrownCoin.h"
+#include"ShinningBrick.h"
+#include"Leaf.h"
+#include"Node.h"
+#include"RedGoomba.h"
+#include"CoinInBrick.h"
+#include "points.h"
+#include"EndGameObject.h"
+#include"HUD.h"
+#include "PBrick.h"
+#include"PItem.h"
+#include"UpDownWood.h"
+#include"ShinningExtraBrick.h"
+#include"Turtle.h"
+#include"FlyUpDownKoopas.h"
+#include"Grid.h"
+#define BBOX_16	16
+#define NUM_20	20
+#define HUD_ANIMATION_SETS_ID	53
+#define FIRE_ANIMATION_SETS_ID	4
 class CPlayScene : public CScene
 {
 protected:
-	CMario *player;					// A play scene has to have player, right? 
+	CMario *player=CMario::GetInstance();		
+	// A play scene has to have player, right? 
 	Map *map;
+	CHUD *hud = CHUD::GetInstance();
+	Grid *grid;
 	vector<LPGAMEOBJECT> objects;
+	int mapid;
+	
 
 	void _ParseSection_TEXTURES(string line);
 	void _ParseSection_SPRITES(string line);
@@ -28,7 +55,11 @@ protected:
 	void _ParseSection_ANIMATION_SETS(string line);
 	void _ParseSection_OBJECTS(string line);
 
+public:
 
+	float nextX, nextY;
+	int levelbackup;
+	bool Iscreated;
 public:
 	CPlayScene(int id, LPCWSTR filePath);
 
@@ -38,7 +69,9 @@ public:
 	virtual void Unload();
 
 	CMario * GetPlayer() { return player; }
-
+	int GetMapID() {
+		return mapid;
+	}
 	//friend class CPlayScenceKeyHandler;
 };
 

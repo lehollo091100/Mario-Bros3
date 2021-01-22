@@ -12,6 +12,8 @@ public:
 		type = GType::BRICK;
 		width = W;
 		height = H;
+		health = 1;
+		IsMovingObj = false;
 	}
 	virtual void Render();
 	virtual void GetBoundingBox(float &l, float &t, float &r, float &b);

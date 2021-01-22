@@ -7,23 +7,27 @@
 #define GOOMBA_BBOX_HEIGHT 15
 #define GOOMBA_BBOX_HEIGHT_DIE 9
 
-#define GOOMBA_STATE_WALKING 100
-#define GOOMBA_STATE_DIE 200
+#define ITEM_STATE_WALKING 100
+#define ITEM_STATE_DIE 200
 
 #define GOOMBA_ANI_WALKING 0
 #define GOOMBA_ANI_DIE 1
 
+
+
 class CItem : public CGameObject
-{
+{ 
+public:
 	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects);
 	virtual void Render();
 	DWORD diestart;
 	int time;
+	
 
 public:
 	bool IsWalking, Isdie;
-	CItem(int s);
+	CItem();
 	virtual void SetState(int state);
 };
 

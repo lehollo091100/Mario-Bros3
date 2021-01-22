@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "GameObject.h"
 #include "Utils.h"
 #include "MarioGeneral.h"
@@ -14,8 +14,10 @@
 #define MARIO_WALKING_MAXSPEED	0.1f
 #define MARIO_RUNNING_MAXSPEED	0.2f
 #define GRAVITY_INCREASE		0.0004f;
+#define GRAVITY_DECREASE_UPFLYING	0.019f
 #define GRAVITY_FALLSLOW		0.0005f;
 #define GRAVITY_FALLSLOW1		0.0006f;
+#define SPEED_RUNNING_INCREASE	0.002f
 
 #define MARIO_STATE_IDLE			0
 #define MARIO_STATE_WALKING_RIGHT	100
@@ -38,6 +40,12 @@
 #define MARIO_STATE_HOLDTURTLE		1202
 #define MARIO_STATE_HOLDTUTLE_WALK	1203
 #define MARIO_STATE_KICKTURTLE		1204
+#define MARIO_STATE_MOVE_RIGHT		1205
+#define MARIO_STATE_MOVE_LEFT		1206
+#define MARIO_STATE_MOVE_DOWN		1207
+#define MARIO_STATE_MOVE_UP			1208
+#define MARIO_STATE_IN_PIPE			1209
+#define MARIO_STATE_OUT_PIPE		1210
 
 #define MARIO_ANI_BIG_IDLE_RIGHT		0
 #define MARIO_ANI_BIG_IDLE_LEFT			1
@@ -135,7 +143,12 @@
 #define MARIO_ANI_BIG_KICK_LEFT		79
 #define MARIO_ANI_WHITE_KICK_RIGHT		80
 #define MARIO_ANI_WHITE_KICK_LEFT		81
-#define MARIO_ANI_DIE				82
+#define MARIO_START_SCENE_ANI		82
+#define MARIO_ANI_DIE				83
+#define MARIO_ANI_START_SCENE	84
+#define MARIO_ANI_WORLDMAP_LEVELTAIL	85
+#define MARIO_ANI_WORLDMAP_LEVELBIG		86
+#define MARIOTAIL_ANI_GO_IN_PIPE		87
 
 #define	MARIO_LEVEL_SMALL	1
 #define	MARIO_LEVEL_BIG		2
@@ -143,18 +156,25 @@
 #define MARIO_LEVEL_FIRE	3
 
 #define MARIO_BIG_BBOX_WIDTH  15
-#define MARIO_BIG_BBOX_HEIGHT 27
+#define MARIO_BIG_BBOX_HEIGHT 28
+#define MARIO_TAIL_BBOX_WIDTH_ATTACK	32
+#define MARIO_TAIL_BBOX_WIDTH	22
 
 #define MARIO_SMALL_BBOX_WIDTH  13
 #define MARIO_SMALL_BBOX_HEIGHT 15
 #define MARIOTAIL_BBOX_TAIL		5
+#define MARIO_START_SCENE_BBOX_HEIGHT	5
 
 #define MARIO_UNTOUCHABLE_TIME 5000
-
+#define NUMBER_10	10
 
 class CMario : public CGameObject
 {
+	static CMario * __instance;
 public:
+	int Point;
+	int stack;
+	int Coin;
 	int level;
 	int untouchable;
 	DWORD untouchable_start;
@@ -162,7 +182,9 @@ public:
 	float start_y;
 	int ani;
 	int time1;
-	vector<LPGAMEOBJECT> LstWeapon;
+	//vector<LPGAMEOBJECT> LstWeapon;
+	vector<LPFire> LstWeapon;
+	int z;// bien dung de han che so lan tao ra COIN trong exxtrashinningbrick
 public:
 	bool IsWalkingR, IsWalkingL, IsRunning, IsSitting, IsRollback, IsSlowDown, IsFalling, IsMaxspeed, IsAttacking,IsDie;
 	bool IsJumping;
@@ -182,10 +204,20 @@ public:
 	DWORD startfly;
 	int time;
 	float vx_backup;
+	int NextScene;
+	//float NextX, NextY;
+	bool IsPortal;
 	CGameObject* koo=NULL ;
-
+	bool IsInMap3,IsMoving,IsInMap4;
+	bool up, down, right, left;
+	float NextX, NextY;
+	bool IsOnPortal;//nhấn nút xuống mới chuyển cảnh
+	bool IsEndGame;
+	float OutPipeY;
+	bool IsInPipe, IsOuttingPipe;//chui cong( xuong+ len)
+	bool CanPiping;//bien de lay gia tri tu PIPE;
 public:
-	CMario(float x = 0.0f, float y = 0.0f);
+	CMario(float x , float y );
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *colliable_objects = NULL);
 	virtual void Render();
 
@@ -243,7 +275,7 @@ public:
 	void Reset();
 
 
-
+	static CMario * GetInstance();
 	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);
 
 };

@@ -63,8 +63,8 @@ public:
 
 	int GetScreenWidth() { return screen_width; }
 	int GetScreenHeight() { return screen_height; }
-	int GetCamX() { DebugOut(L"%f\n", cam_x); return cam_x; }
-	int GetCamY() { return cam_y; }
+	float GetCamX() { return cam_x; }
+	float GetCamY() { return cam_y; }
 
 	static void SweptAABB(
 		float ml,			// move left 
@@ -81,11 +81,23 @@ public:
 		float &nx,
 		float &ny);
 
+	bool IsCollisionAABB(float b1left, float b1top, float b1right, float b1bottom, float b2left, float b2top, float b2right, float b2bottom)
+	{
+		return !(b1right < b2left || b1left > b2right || b1top > b2bottom || b1bottom < b2top);
+	}
+
 	LPDIRECT3DDEVICE9 GetDirect3DDevice() { return this->d3ddv; }
 	LPDIRECT3DSURFACE9 GetBackBuffer() { return backBuffer; }
 	LPD3DXSPRITE GetSpriteHandler() { return this->spriteHandler; }
 
-	void SetCamPos(float x, float y) { if(x >= 0) cam_x = x; cam_y = y; }
+	void SetCamPos(float x, float y) { 
+		if (x >= 0) { cam_x = x; }
+		else
+		{
+			cam_x = 0;
+		}
+		cam_y = y; 
+	}
 
 	static CGame * GetInstance();
 

@@ -25,7 +25,7 @@ void CAnimation::Add(int spriteId, DWORD time)
 void CAnimation::Render(float x, float y, int alpha, int nx)
 {
 	DWORD now = GetTickCount();
-	if (currentFrame == -1)
+	if (currentFrame  <0)
 	{
 		currentFrame = 0;
 		lastFrameTime = now;

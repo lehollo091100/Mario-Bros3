@@ -28,6 +28,9 @@
     <Filter Include="Scene">
       <UniqueIdentifier>{f578f2f5-c0a4-4c90-a4d0-77b1c70244b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Effect">
+      <UniqueIdentifier>{34151b57-9135-460f-bb71-9624e7598947}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp">
@@ -95,6 +98,75 @@
     </ClCompile>
     <ClCompile Include="FireBullet.cpp">
       <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="GreenPlant.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="KoopasBrown.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="FireGreenPlant.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="BrownCoin.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="FlyKoopas.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Leaf.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Node.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RedGoomba.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="CoinInBrick.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="points.cpp">
+      <Filter>Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="HUD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Font.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShinningBrick.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="PBrick.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="EndGameObject.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="ShinningExtraBrick.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="StackSpeed.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="UpDownWood.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="PItem.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Turtle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Boomerang.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FlyUpDownKoopas.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -166,6 +238,75 @@
     </ClInclude>
     <ClInclude Include="FireBullet.h">
       <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="GreenPlant.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="KoopasBrown.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="FireGreenPlant.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="FlyKoopas.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="BrownCoin.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="ShinningBrick.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Leaf.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Node.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RedGoomba.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="CoinInBrick.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="points.h">
+      <Filter>Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="HUD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Font.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StackSpeed.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PBrick.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="PItem.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="EndGameObject.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="UpDownWood.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="ShinningExtraBrick.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Turtle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Boomerang.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FlyUpDownKoopas.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

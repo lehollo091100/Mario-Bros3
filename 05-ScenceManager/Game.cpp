@@ -375,7 +375,6 @@ void CGame::_ParseSection_SCENES(string line)
 void CGame::Load(LPCWSTR gameFile)
 {
 	DebugOut(L"[INFO] Start loading game file : %s\n", gameFile);
-
 	ifstream f;
 	f.open(gameFile);
 	char str[MAX_GAME_LINE];
@@ -417,6 +416,8 @@ void CGame::SwitchScene(int scene_id)
 	CTextures::GetInstance()->Clear();
 	CSprites::GetInstance()->Clear();
 	CAnimations::GetInstance()->Clear();
+	//Map::GetInstance()->Clear();
+	//Map::GetInstance()->SetMap(scene_id);
 
 	current_scene = scene_id;
 	LPSCENE s = scenes[scene_id];

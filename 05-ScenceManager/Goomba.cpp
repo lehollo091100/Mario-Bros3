@@ -2,7 +2,7 @@
 CGoomba::CGoomba()
 {
 	SetState(GOOMBA_STATE_WALKING);
-	SetHealth(1);
+	SetHealth(2);
 	type = GType::GOOMBA;
 	nx = -1;
 	vx = nx * GOOMBA_WALKING_SPEED;
@@ -14,8 +14,10 @@ CGoomba::CGoomba()
 
 void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
-	if (health < 0)
-		IsDie=true;
+	if (health == 0)
+		IsDie = true;
+	if (IsDie)
+		return;
 	CGameObject::Update(dt, coObjects);
 	vy += 0.015f * dt;
 
@@ -33,7 +35,7 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	//x += dx;
 	//y += dy;
 
-	DebugOut(L"time:%d\n",time);
+	//DebugOut(L"time:%d\n",time);
 	if (IsWalking) {
 		state = GOOMBA_STATE_WALKING;
 		if (nx == -1)
@@ -51,10 +53,11 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 	}
 
-	if (health == 0)
+	if (health == 1)
 	{
 		if (IsWalking)
 		{
+			vx = 0;
 			//DebugOut(L"line 50\n");
 			IsWalking = false;
 			SetState(GOOMBA_STATE_DIE);
@@ -63,7 +66,7 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	if (Isdie)
 	{
 		vx = 0;
-		state = GOOMBA_STATE_DIE;
+		this->state = GOOMBA_STATE_DIE;
 		if (time <= 30)
 		{
 			time++;
@@ -72,7 +75,7 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			SubHealth(1);
 		}
 	}
-	
+
 
 
 	CalcPotentialCollisions(coObjects, coEvents);
@@ -98,16 +101,32 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		for (UINT i = 0; i < coEventsResult.size(); i++)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
-			if (e->obj->GetType() == GType::COLORBRICK)
-			{
-				this->nx = -this->nx;
-				this->vx = this->nx*GOOMBA_WALKING_SPEED;
-			}
-			if (e->nx != 0)
-			{
-				if (e->obj->GetType() == GType::GOOMBA)
+			if (e->nx != 0) {
+				if (e->obj->GetType() == GType::BRICK||e->obj->GetType() == GType::PIPE||e->obj->GetType()==GType::QUESTIONBRICK)
+				{
+					this->nx = -this->nx;
+					this->vx = this->nx*GOOMBA_WALKING_SPEED;
+				}
+				if (e->obj->GetType() == GType::COLORBRICK)
 				{
 					x += dx;
+				}
+				/*if (e->obj->GetType()==GType::FLYKOOPAS)
+				{
+					vy = 0;
+				}*/
+				/*else
+				{
+					x += dx;
+
+				}*/
+				
+			}
+			if (e->ny != 0)
+			{
+				if (e->obj->GetType() == GType::ITEM||e->obj->GetType()==GType::FLYKOOPAS)
+				{
+					vy= 0;
 				}
 			}
 
@@ -118,7 +137,7 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 void CGoomba::Render()
 {
-	if (time>30)
+	if (IsDie)
 	{
 		return;
 	}
@@ -140,6 +159,7 @@ void CGoomba::SetState(int state)
 		//diestart = GetTickCount64();
 		//DebugOut(L"state goomba die\n");
 		Isdie = true;
+		
 		break;
 	case GOOMBA_STATE_WALKING:
 		IsWalking = true;
@@ -151,10 +171,10 @@ void CGoomba::GetBoundingBox(float &left, float &top, float &right, float &botto
 {
 	left = x;
 	top = y;
-	right = x + GOOMBA_BBOX_WIDTH;
+	right = left + GOOMBA_BBOX_WIDTH;
 
 	if (state == GOOMBA_STATE_DIE)
-		bottom = y + GOOMBA_BBOX_HEIGHT_DIE;
+		bottom = top + GOOMBA_BBOX_HEIGHT_DIE;
 	else
-		bottom = y + GOOMBA_BBOX_HEIGHT;
+		bottom = top + GOOMBA_BBOX_HEIGHT;
 }

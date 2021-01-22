@@ -10,7 +10,7 @@ private:
 	int ani;
 public:
 	Fire(int nx);
-	void GetBoundingBox(float &left, float &top, float &right, float &bottom);
+	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);
 	void Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects);
 	void SetDirection(int d) {
 		nx = d;
@@ -18,7 +18,8 @@ public:
 		vy = 0;
 
 	}
-	void Render();
+	virtual void Render();
 	~Fire() {}
 };
+typedef Fire *LPFire;
 

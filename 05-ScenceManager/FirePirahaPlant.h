@@ -4,6 +4,7 @@
 #include "FireBullet.h"
 #define BULLETVY_NEAR	0.03f
 #define BULLETVY_FAR	0.01f
+
 #define FIREPIRAHAPLANT_ANI_UPRIGHT		0
 #define FIREPIRAHAPLANT_ANI_UPLEFT		1
 #define FIREPIRAHAPLANT_ANI_DOWNRIGHT		2
@@ -14,11 +15,11 @@
 #define FIREPIRAHAPLANT_ANI_DOWNIDLELEFT	7
 
 #define FIREPIRAHAPLANT_WIDTH	18
-#define FIREPIRAHAPLANT_HEIGHT	35
+#define FIREPIRAHAPLANT_HEIGHT	31
 #define FIREPIRAHAPLANT_HIDDENSTATE 100
 #define FIREPIRAHAPLANT_ATTACKSTATE	200
 #define FIREPIRAHAPLANT_APPEARSTATE	300
-
+#define FIREPIRAHAPLANT_STOPTIME	3000
 #define	FIREPIRANHAPLANT_MAXY_ATK	200
 #define	FIREPIRANHAPLANT_MAXX_ATK	150
 #define	FIREPIRANHAPLANT_MINX_ATK	16
@@ -40,17 +41,22 @@ public:
 	bool canAttack;
 	float bulletvx, bulletvy;
 	int bulletnx;
-	vector<LPGAMEOBJECT> Lstbullet;
+	vector<LPFireBullet> Lstbullet;
+	bool IsNextTo;
+	int statebackup;
 public:
 	FirePirahaPlant(CMario *mario)
 	{
-		
-		type:GType::FIREPIRAHAPLANT;
+		FireBullet* bullet = new FireBullet();
+		Lstbullet.push_back(bullet);
+		type=GType::FIREPIRAHAPLANT;
 		IsHidden = true;
 		IsAttacking = false;
 		IsMoving = false;
 		ny = 1;
 		m = mario;
+		SetHealth(1);
+		IsNextTo = false;
 		//vy = -FIREPIRANHAPLANT_SPEED_Y;
 	};
 	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);

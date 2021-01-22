@@ -1,12 +1,12 @@
 #include "QuestionBrick.h"
-CQuestionBrick::CQuestionBrick(int hitem)
+CQuestionBrick::CQuestionBrick(int BType)
 {
 	type = GType::QUESTIONBRICK;
 	width = QBRICK_BBOX_WIDTH;
 	height = QBRICK_BBOX_HEIGHT;
 	SetHealth(1);
 	startY = 0;
-	HiddenItem = hitem;
+	bricktype = BType;
 	state = 1;
 }
 void CQuestionBrick::Render()
@@ -32,21 +32,9 @@ void CQuestionBrick::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		{
 			
 			SetState(BRICK_STATE_NOTHINGLEFT);
-			DebugOut(L"line 34 hiddenitem%d\n",HiddenItem);
-			switch (HiddenItem)
+			//DebugOut(L"line 34 hiddenitem%d\n",HiddenItem);
+			switch (bricktype)
 			{
-			case GType::GOOMBA:
-			{
-				CGoomba *goomba = new CGoomba();
-				float qx, qy;
-				//objects[i]->GetPosition(qx, qy);
-				goomba->SetPosition(x, y - 17);
-				CAnimationSets * animation_sets = CAnimationSets::GetInstance();
-				LPANIMATION_SET ani_set = animation_sets->Get(3);
-				goomba->SetAnimationSet(ani_set);
-				coObjects->push_back(goomba);
-				DebugOut(L"line 48\n");
-			}
 			default:
 				break;
 			}
