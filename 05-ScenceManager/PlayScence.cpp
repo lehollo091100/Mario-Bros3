@@ -128,10 +128,9 @@ void CPlayScene::_ParseSection_ANIMATION_SETS(string line)
 /*
 	Parse a line in section [OBJECTS]
 */
-void CPlayScene::_ParseSection_OBJECTS(string line)
+void CPlayScene::_ParseSection_OBJECTS(string line,int l,int t,int r,int b )
 {
 	vector<string> tokens = split(line);
-
 	//DebugOut(L"--> %s\n",ToWSTR(line).c_str());
 
 	if (tokens.size() < 3) return; // skip invalid lines - an object set must have at least id, x, y
@@ -145,15 +144,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	CAnimationSets * animation_sets = CAnimationSets::GetInstance();
 
 	CGameObject *obj = NULL;
-	/*
-	switch(object_tyype)
-	{
-	case MARIO
-		Mario * mario = new MArio(x,y);
-		break;
-
-
-	*/
 	switch (object_type)
 	{
 	case GType::PORTAL:
@@ -166,19 +156,16 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		y1 = atoi(tokens[8].c_str());
 		//DebugOut(L"nextX%f\n:", x1);
 		obj = new CPortal(x, y, r, b, scene_id, x1, y1);
+		/*float l1, t1, r1, b1;
+		obj->GetBoundingBox(l1, t1, r1, b1);
+		l1 = (int)(l / 165);
+		t1 = (int)(t / 120);
+		r1 = (int)(r / 165);
+		b1 = (int)(b / 120);
+		grid->push_backGrid(obj, (int)l1, (int)t1, (int)r1, (int)b1);*/
 		break;
 	}
 	case OBJECT_TYPE_MARIO: {
-		//if (player != NULL)
-		//{
-		//	//DebugOut(L"Nx:%f,y:%f", nextX, nextY);
-		//	player = new CMario(x, y);
-		//	CGame::GetInstance()->SetCamPos(player->x, player->y);
-		//	player->SetLevel(levelbackup);
-		//	DebugOut(L"level backup line 176 playscene%d\n:", levelbackup);
-		//	DebugOut(L"[ERROR] MARIO object was created before!\n");
-		//	return;
-		//}
 		player->SetPosition(x, y);
 		CGame::GetInstance()->SetCamPos(player->x, player->y);
 		if (player->NextX != 0 && player->NextY != 0)
@@ -332,21 +319,28 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj->SetAnimationSet(ani_set);
 	}
 	if (obj != NULL) {
-		float l, t, r, b;
+		/*float l, t, r, b;
 		obj->GetBoundingBox(l, t, r, b);
 		l = (int)(l / 165);
 		t = (int)(t / 120);
 		r = (int)(r / 165);
 		b = (int)(b / 120);
-		grid->push_backGrid(obj, (int)l, (int)t,(int)r, (int)b);
+		grid->push_backGrid(obj, (int)l, (int)t, (int)r, (int)b);*/
+		grid->push_backGrid(obj, l, t, r, b);
+		DebugOut(L"debug325:%d %d %d %d %d\n", obj->type, (int)l, (int)t, (int)r, (int)b);
 		//objects.push_back(obj);
 	}
 }
 
 void CPlayScene::Load()
 {
+	ifstream ifs("gridinfo.txt", ios::in);
 	DebugOut(L"[INFO] Start loading scene resources from : %s \n", sceneFilePath);
+	string filepath;
+	filepath = "inputObjects" + to_string(mapid)+".txt";
+	Loader *load = new Loader();
 
+	load->LoadGrid(filepath);
 	ifstream f;
 	f.open(sceneFilePath);
 
@@ -384,10 +378,16 @@ void CPlayScene::Load()
 		case SCENE_SECTION_SPRITES: _ParseSection_SPRITES(line); break;
 		case SCENE_SECTION_ANIMATIONS: _ParseSection_ANIMATIONS(line); break;
 		case SCENE_SECTION_ANIMATION_SETS: _ParseSection_ANIMATION_SETS(line); break;
-		case SCENE_SECTION_OBJECTS: _ParseSection_OBJECTS(line); break;
+		case SCENE_SECTION_OBJECTS: {
+			int l, t, r, b;
+			ifs >>l>> l >> t >> r >> b;
+			_ParseSection_OBJECTS(line,l,t,r,b); 
+			DebugOut(L"left,top,right,bottom: %d %d %d %d \n", l, t, r, b);
+			break; 
+		}
 		}
 	}
-
+	ifs.close();
 	f.close();
 	Map::GetInstance()->SetMap(player->NextScene);
 	Map::GetInstance()->ReadMap();
@@ -399,6 +399,7 @@ void CPlayScene::Load()
 
 void CPlayScene::Update(DWORD dt)
 {
+	DebugOut(L"mapid:%d\n", mapid);
 	grid->GetListObj(objects, 335, 224, CGame::GetInstance()->GetCamX(), CGame::GetInstance()->GetCamY());
 	//DebugOut(L"size:%d\n", objects.size());
 	grid->ClearGrid(335,224,CGame::GetInstance()->GetCamX(), CGame::GetInstance()->GetCamY());
@@ -659,11 +660,11 @@ void CPlayScene::Render()
 {
 	map->Drawmap();
 	player->Render();
-	if (mapid != 3 && mapid != 4)
-		hud->Render();
 	//player->RenderBoundingBox();
 	for (int i = 0; i < objects.size(); i++)
 		objects[i]->Render();
+	if (mapid != 3 && mapid != 4)
+		hud->Render();
 }
 
 /*
@@ -678,7 +679,9 @@ void CPlayScene::Unload()
 	{
 		delete objects[i];
 	}
+
 	objects.clear();
+	grid->RemoveGrid();
 	//int levelbackup;
 	//player = NULL;
 	Map::GetInstance()->Clear();

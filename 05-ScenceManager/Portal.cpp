@@ -11,6 +11,7 @@ CPortal::CPortal(float l, float t, float r, float b, int scene_id,int nextx,int 
 	height = b - t + 1;
 	this->nextX = nextx;
 	this->nextY = nexty;
+	health = 1;
 }
 
 void CPortal::Render()

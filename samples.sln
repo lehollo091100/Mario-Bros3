@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00-Intro", "00-Intro\00-Int
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "05-ScenceManager", "05-ScenceManager\05-ScenceManager.vcxproj", "{C83A385D-5992-4E1B-B783-AB1D446414D5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LoadGrid", "LoadGrid\LoadGrid.vcxproj", "{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,20 @@ Global
 		{C83A385D-5992-4E1B-B783-AB1D446414D5}.Release|Win32.Build.0 = Release|Win32
 		{C83A385D-5992-4E1B-B783-AB1D446414D5}.Release|x64.ActiveCfg = Release|x64
 		{C83A385D-5992-4E1B-B783-AB1D446414D5}.Release|x64.Build.0 = Release|x64
+		{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}.Debug|Win32.Build.0 = Debug|Win32
+		{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}.Debug|x64.ActiveCfg = Debug|x64
+		{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}.Debug|x64.Build.0 = Debug|x64
+		{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}.Release|Any CPU.ActiveCfg = Release|Win32
+		{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}.Release|Win32.ActiveCfg = Release|Win32
+		{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}.Release|Win32.Build.0 = Release|Win32
+		{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}.Release|x64.ActiveCfg = Release|x64
+		{2DD76BBE-C133-42D9-8760-F117FEFEC4E5}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

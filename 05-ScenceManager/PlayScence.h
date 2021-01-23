@@ -1,4 +1,5 @@
 #pragma once
+#include"../LoadGrid/Loader.h"
 #include "Game.h"
 #include "Textures.h"
 #include "Scence.h"
@@ -53,7 +54,7 @@ protected:
 	void _ParseSection_SPRITES(string line);
 	void _ParseSection_ANIMATIONS(string line);
 	void _ParseSection_ANIMATION_SETS(string line);
-	void _ParseSection_OBJECTS(string line);
+	void _ParseSection_OBJECTS(string line,int l, int t, int r, int b);
 
 public:
 
