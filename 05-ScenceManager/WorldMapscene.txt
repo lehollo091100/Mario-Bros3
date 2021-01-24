@@ -800,7 +800,6 @@ ENDGAMEITEM UP
 ##16=RED goomba,17=endgame item ,50=portal,54=node
 # MARIO
 0	30	53	1	16	16
-
 # type	x	y	ani_set_id	width	height	up	down	left	right	scene_id
 54	30	52	2	20	20	0	0	0	1	100
 54	75	55	2	16	10	1	0	1	0	100
@@ -814,7 +813,6 @@ ENDGAMEITEM UP
 #--4--#
 54	207	57	2	15	15	0	0	1	1	5
 54	249	57	2	15	15	1	0	1	0	100
-
 # --- SCENE PORTAL ----
 # type	l	t	ani_set_id	r	b	scene_id	nextX	nextY
 50	2500	250	1	2550	345	2	110	55

@@ -39,8 +39,8 @@ void FlyUpDownKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 	CGameObject::Update(dt, coObjects);
 	y += dy;
-	x += dx;
-	if (y >= 380||y<=300)
+	//x += dx;
+	if (this->y-startY>RANGE||startY-y>RANGE)
 	{
 		this->ny = -ny;
 		vy = ny * KOOPAS_VY;

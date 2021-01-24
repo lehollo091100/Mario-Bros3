@@ -25,7 +25,7 @@ CKoopas::CKoopas(CMario *m, int range)
 
 void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
-
+	DebugOut(L"koopas y:%f\n", y);
 	//DebugOut(L"2:%f\n", vx);
 	if (health <= 0)
 	{
@@ -48,7 +48,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 	if (IsWalking) {
 		//DebugOut(L"LINE 45\n");
-		if (this->x<=(BL+5) || ((this->x + KOOPAS_BBOX_WIDTH)>(BR-5)))
+		if (this->x <= (BL + 5) || ((this->x + KOOPAS_BBOX_WIDTH) > (BR - 5)))
 		{
 			nx = -nx;
 			vx = nx * KOOPAS_WALKING_SPEED;
@@ -88,10 +88,6 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		time = 0;
 		//DebugOut(L"LINE 72 ATTACK STATE\n");
 	}
-	//if(nx == 1 && abs(x - 14 - StartPX) >= range) {
-	//	nx = -nx;
-	//	vx = nx * KOOPAS_WALKING_SPEED;
-	//}
 	CGameObject::Update(dt, coObjects);
 	vy += KOOPAS_GRAVITY * dt;
 
@@ -125,7 +121,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			LPCOLLISIONEVENT e = coEventsResult[i];
 			if (state == KOOPAS_STATE_WALKING)
 			{
-				if (e->obj->GetType() == GType::COLORBRICK||e->obj->GetType()==GType::GOOMBA)
+				if (e->obj->GetType() == GType::COLORBRICK || e->obj->GetType() == GType::GOOMBA)
 				{
 					//x += dx;
 					ColorBrick *colorbrick = dynamic_cast<ColorBrick*>(e->obj);
@@ -134,20 +130,52 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						BL = colorbrick->GetXOfColorBrick();
 						BR = BL + colorbrick->width;
 					}
-					if(e->nx!=0)
+					if (e->nx != 0)
 					{
 						x += dx;
 					}
 				}
 				if (e->obj->GetType() == GType::SHINNINGBRICK)
 				{
-					//vx = 0;
-					 CShinningBrick *sbrick= dynamic_cast<CShinningBrick*>(e->obj);
-					 if (e->ny != 0)
-					 {
-						 BL = sbrick->x-16;
-						 BR = BL + 45;
-					 }
+					CShinningBrick *sbrick = dynamic_cast<CShinningBrick*>(e->obj);
+					if (e->ny != 0)
+					{
+						vy = 0;
+						y += e->ny * 0.04f;
+						bool mostleft = false, mostright = false;
+						BL = sbrick->x - 16;
+						BR = BL + 45;
+						while (!mostleft || !mostright)
+						{
+							if (!mostleft)
+							{
+								
+								if (i > 0 && coEventsResult[i - 1]->obj->GetType() == GType::SHINNINGBRICK&&coEventsResult[i - 1]->obj->GetY() == e->obj->GetY())
+								{
+									
+									BL = BL - 16;
+
+								}
+								else
+								{
+									mostleft = true;
+								}
+							}
+							if (!mostright)
+							{
+
+								if (i>0&&i<coEventsResult.size()-2 && coEventsResult[i + 1]->obj->GetType() == GType::SHINNINGBRICK&&coEventsResult[i + 1]->obj->GetY() == e->obj->GetY())
+								{
+									BR = BR + 16;
+
+								}
+								else {
+									mostright = true;
+								}
+							}
+						}
+
+					}
 				}
 				if (e->obj->GetType() == GType::BRICK) {
 					if (e->nx != 0)
@@ -167,14 +195,14 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					this->nx = -this->nx;
 					vx = this->nx * KOOPAS_WALKING_SPEED;
 				}
-				
 
-				
+
+
 			}
 			if (state == KOOPAS_STATE_ATTACK || state == KOOPAS_STATE_UP_ATTACK)
 			{
 				if (e->nx != 0) {
-					if (e->obj->GetType() == GType::BRICK  || e->obj->GetType() == GType::PIPE) {
+					if (e->obj->GetType() == GType::BRICK || e->obj->GetType() == GType::PIPE) {
 						x -= -(this->nx) * 0.04f;
 						this->nx = -this->nx;
 						this->vx = this->nx * KOOPAS_ATTACK_SPEED;
@@ -213,8 +241,8 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					}
 					else if (e->obj->GetType() == GType::SHINNINGBRICK)
 					{
-						e->obj->SubHealth(1);
-						e->obj->SetState(SBRICK_STATE_NOTHINGLEFT);
+						e->obj->SubHealth(2);
+						//e->obj->SetState(SBRICK_STATE_NOTHINGLEFT);
 						x -= -(this->nx) * 0.04f;
 						this->nx = -this->nx;
 						this->vx = this->nx * KOOPAS_ATTACK_SPEED;
@@ -225,10 +253,10 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 			if (state == KOOPAS_STATE_DIE_UP)
 			{
-				
-					x += dx;
-					y += dy;
-				
+
+				x += dx;
+				y += dy;
+
 			}
 		}
 	}
@@ -350,7 +378,7 @@ void CKoopas::GetBoundingBox(float &left, float &top, float &right, float &botto
 
 	if (state == KOOPAS_STATE_DEFEND || state == KOOPAS_STATE_ATTACK || state == KOOPAS_STATE_UP || state == KOOPAS_STATE_UP_ATTACK)
 	{
-		top = y ;
+		top = y;
 		bottom = y + KOOPAS_BBOX_HEIGHT_DIE;
 
 	}

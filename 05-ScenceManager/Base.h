@@ -30,5 +30,6 @@ enum GType {
 	NODE=54,
 	CPBRICK=55,
 	PITEM=56,
+	BROKENBRICK=57,
 
 };

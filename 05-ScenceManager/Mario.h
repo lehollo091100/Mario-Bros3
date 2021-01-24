@@ -5,7 +5,7 @@
 #include "Fire.h"
 #define MARIO_WALKING_SPEED		0.04f 
 #define MARIO_AX				0.04f
-#define MARIO_JUMP_SPEED_Y		0.35f
+#define MARIO_JUMP_SPEED_Y		0.37f
 #define MARIO_JUMP_DEFLECT_SPEED 0.2f
 #define MARIO_GRAVITY			0.001f
 #define MARIO_DIE_DEFLECT_SPEED	 0.5f

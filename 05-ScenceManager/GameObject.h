@@ -83,6 +83,7 @@ public:
 		this->x = x;
 	}*/
 	float GetX() { return this->x; }
+	float GetY() { return this->y; }
 	int GetHealth() { return this->health; }
 	void RenderBoundingBox();
 	virtual void SetDirection(int d) { nx = d;}

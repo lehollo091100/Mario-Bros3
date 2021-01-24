@@ -1,5 +1,4 @@
 #pragma once
-#include"../LoadGrid/Loader.h"
 #include "Game.h"
 #include "Textures.h"
 #include "Scence.h"
@@ -34,6 +33,7 @@
 #include"Turtle.h"
 #include"FlyUpDownKoopas.h"
 #include"Grid.h"
+#include"BrokenBrick.h"
 #define BBOX_16	16
 #define NUM_20	20
 #define HUD_ANIMATION_SETS_ID	53

@@ -3,30 +3,28 @@
 
 void EndGameObject::GetBoundingBox(float & left, float & top, float & right, float & bottom)
 {
-	if (health==2)
-	{
-		top = y;
-		left = x;
-		right = left + BBOX_WIDTH;
-		bottom = top + BBOX_WIDTH;
-	}
-	else
-	{
-		return;
-	}
+
+	top = y;
+	left = x;
+	right = left + BBOX_WIDTH;
+	bottom = top + BBOX_WIDTH;
+
+
 }
 
 void EndGameObject::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	if (health<=0)
+	if (health <= 0)
 	{
 		IsDie = true;
 	}
-	
-	if (y<=230)
+	if (IsDie)
+		return;
+	if (STARTY == 0)
 	{
-		health = 0;
+		STARTY = y;
 	}
+
 	CGameObject::Update(dt, coObjects);
 	y += dy;
 	if (health == 2)
@@ -57,7 +55,29 @@ void EndGameObject::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 				SetState(STATE_STAR);
 		}
 	}
+	
 
+		if (STARTY - y >= RANGE)
+		{
+			//health = 1;
+			this->SetState(STATE_BOARD);
+		}
+	
+	if (state == STATE_BOARD)
+	{
+		//vy = -0.6f;
+		//SetPosition(this->x - 50, this->y - 20);
+		if (boardtime == 0)
+		{
+			boardtime = GetTickCount64();
+		}
+		if (GetTickCount64() - boardtime > 12000)
+		{
+			boardtime = 0;
+			this->health = 0;
+		}
+	}
+	//DebugOut(L"y:%f\n", y);
 }
 
 void EndGameObject::Render()
@@ -89,6 +109,11 @@ void EndGameObject::Render()
 		{
 			ani = PLANT_UP_ANI;
 		}
+		if (state == STATE_BOARD)
+		{
+			ani = BOARD_ANI;
+		}
+
 	}
 	animation_set->at(ani)->Render(x, y);
 	RenderBoundingBox();
@@ -118,7 +143,7 @@ void EndGameObject::SetState(int state)
 	{
 		ny = -1;
 		vy = ny * SPEED_UP;
-		SubHealth(1);
+		this->health = 1;
 		this->state = STATE_STAR_UP;
 		break;
 	}
@@ -126,7 +151,7 @@ void EndGameObject::SetState(int state)
 	{
 		ny = -1;
 		vy = ny * SPEED_UP;
-		SubHealth(1);
+		this->health = 1;
 		this->state = STATE_MUSHROOM_UP;
 		break;
 	}
@@ -134,9 +159,18 @@ void EndGameObject::SetState(int state)
 	{
 		ny = -1;
 		vy = ny * SPEED_UP;
-		SubHealth(1);
+		this->health = 1;
 		this->state = STATE_PLANT_UP;
 		break;
+	}
+	case STATE_BOARD:
+	{
+		vy = 0;
+		this->state = STATE_BOARD;
+		//this->y = STARTY - 20;
+		this->SetPosition(this->x - 70, STARTY-20 );
+		break;
+
 	}
 	default:
 		break;

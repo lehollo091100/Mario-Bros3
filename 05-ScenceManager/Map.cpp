@@ -16,21 +16,6 @@ void Map::ReadMap()
 		{
 			ifs >>map[i][j];
 		}
-	//int noBj;//so loai Obj
-	//ifs >> noBj;
-	//for (int i = 0; i < noBj; i++)
-	//{
-	//	int Type;//day la loai Ojb (luu trong file txt)
-	//	ifs >> Type;
-	//	int nofType;//so luong cua loai Obj
-	//	ifs >>nofType;
-	//	for (int j = 0; j < nofType; j++)
-	//	{
-	//		int idObj, xObj, yObj, anisetid,  width, height;
-	//		int objHiden, left, right, top, bot;
-	//		ifs >> idObj >> xObj >> yObj >> width >> height >> objHiden >> left >> right >> top >> bot;
-	//	}
-	//}
 	ifs.close();
 
 }
@@ -69,12 +54,8 @@ void Map::SetMap(int Id)
 	for (int i = 0; i < mapId; i++)
 	{
 		ifs >> MapLink;
-		//DebugOut(L"maplink:%c", MapLink);
-		//ifs >> MapLink;
-		//ifs >> MapRow >> MapColumn;
 		ifs >> TexLink;
 		ifs >> TexRow >> TexCol;
-		//DebugOut(L"%d%d%s\n", TexCol, TexRow, TexLink);
 	}
 	//Lay texture tu linktex
 	LPCSTR FName = TexLink.c_str();

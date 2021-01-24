@@ -112,9 +112,12 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				vy += MARIO_GRAVITY * dt;
 		DWORD now = GetTickCount64();
 		time = now - startfly;
+		
 		//DebugOut(L"TIME:%d\n",time);
 		if (IsAttacking && now - LastimeAttack > 470 && level == MARIO_LEVEL_TAIL)
 		{
+			/*if(IsOnGround)
+				y -= 16;*/
 			IsAttacking = false;
 			state = MARIO_STATE_IDLE;
 		}
@@ -396,7 +399,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			if (e->nx != 0) {
 				//brick or pipe
 				if (e->obj->GetType() == GType::BRICK || e->obj->GetType() == GType::PIPE || e->obj->GetType() == GType::QUESTIONBRICK||e->obj->GetType()==GType::UPDOWNWOOD) {
-					vx = this->nx*0.01f;
+					vx = this->nx*0.04f;
 					if (!IsWalking) {
 						if (!IsSitting) {
 							//DebugOut(L"line 277 IDLE\n");
@@ -934,6 +937,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					NextY = p->GetNextY();
 					IsPortal = true;
 					IsInPipe = false;
+					IsEndGame = false;
 				}
 				else {
 					//y += dy;
@@ -1220,8 +1224,10 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				}
 				case GType::SHINNINGBRICK:
 				{
+					DebugOut(L"line 1227\n");
 					if (coObjects->at(i)->GetState() == BRICK_STATE_NORMAL)
 					{
+
 						if (isCollisionWithObj(coObjects->at(i))->nx != 0)
 						{
 							if (level == MARIO_LEVEL_TAIL && IsAttacking)
@@ -1229,8 +1235,10 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 								if (coObjects->at(i)->GetState() == BRICK_STATE_NORMAL)
 								{
 									//DebugOut(L"line 926 mario\n");
-									coObjects->at(i)->SubHealth(2);
-									//coObjects->at(i)->SetState(SBRICK_STATE_NOTHINGLEFT);
+									coObjects->at(i)->SubHealth(1);
+									coObjects->at(i)->SetState(SBRICK_STATE_NOTHINGLEFT);
+									DebugOut(L"line 1238\n");
+
 									break;
 									//coObjects->at(i)->SubHealth(1);
 								}
@@ -1296,7 +1304,16 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 							break;
 						}
 						break;
-					}break;
+					}
+					if (coObjects->at(i)->GetState() == SBRICK_STATE_TURN_COIN)
+					{
+						coObjects->at(i)->SetHealth(0);
+						this->Coin += 1;
+						this->Point += 100;
+						//x += dx;
+						//y += dy;
+					}
+					break;
 				}
 				case GType::BROWNLEAF:
 				{
@@ -1449,6 +1466,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					down = p->IsDown();
 					right = p->IsRight();
 					left = p->IsLeft();
+					break;
 				}
 				case GType::FLYUPDOWNKOOPAS:
 				{
@@ -1459,7 +1477,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 							//DebugOut(L"ny:%f\n", isCollisionWithObj(coObjects->at(i))->ny);
 							if (coObjects->at(i)->GetState() == FLY_STATE)
 							{
-								vy -= MARIO_DIE_DEFLECT_SPEED;
+								vy -= 0.7f;
 								coObjects->at(i)->SetState(DISAPPEAR_STATE);
 								//e->obj->IsDie = true;
 							}
@@ -1473,6 +1491,40 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					{
 						SetState(MARIO_STATE_DIE);
 					}
+					break;
+				}
+				case GType::QUESTIONBRICK:
+				{
+					if (isCollisionWithObj(coObjects->at(i))->nx != 0)
+					{
+						if(this->level==4&&IsAttacking)
+						{CQuestionBrick *QBrick = dynamic_cast<CQuestionBrick *>(coObjects->at(i));
+						if (QBrick->GetState() != BRICK_STATE_NOTHINGLEFT) {
+
+							if (QBrick->bricktype == QUESTIONBRICK_TYPE_COIN)
+							{
+								QBrick->HiddenItem = TYPE_COIN;
+							}
+							else if (QBrick->bricktype == QUESTIONBRICK_TYPE_MOVING)
+							{
+								if (this->level == MARIO_LEVEL_SMALL)
+								{
+									QBrick->HiddenItem = TYPE_MUSHROOM;
+								}
+								else
+								{
+									QBrick->HiddenItem = TYPE_LEAF;
+								}
+							}
+							QBrick->SetState(BRICK_STATE_COLISSION);
+						}
+					}
+					}
+					break;
+				}
+				case GType::BOOMERANG:
+				{
+					this->SetState(MARIO_STATE_DIE);
 					break;
 				}
 				}
@@ -1536,7 +1588,7 @@ void CMario::Render()
 						ani = MARIO_ANI_BIG_KICK_LEFT;
 					}
 				}
-				if (state == MARIO_STATE_WALKING_RIGHT)
+				if (state == MARIO_STATE_WALKING_RIGHT|| IsEndGame==true)
 					ani = MARIO_ANI_BIG_WALKING_RIGHT;
 				if (state == MARIO_STATE_WALKING_LEFT)
 					ani = MARIO_ANI_BIG_WALKING_LEFT;
@@ -1812,7 +1864,7 @@ void CMario::Render()
 					ani = MARIO_ANI_SMALL_IDLE_RIGHT;
 				else
 					ani = MARIO_ANI_SMALL_IDLE_LEFT;
-				if (state == MARIO_STATE_WALKING_RIGHT)
+				if (state == MARIO_STATE_WALKING_RIGHT||IsEndGame==true)
 					ani = MARIO_ANI_SMALL_WALKING_RIGHT;
 				if (state == MARIO_STATE_WALKING_LEFT)
 					ani = MARIO_ANI_SMALL_WALKING_LEFT;
@@ -2170,8 +2222,6 @@ void CMario::GetBoundingBox(float &left, float &top, float &right, float &bottom
 	//top = y;
 	if (!IsInMap3 && !IsInMap4)
 	{
-
-
 		if (level == MARIO_LEVEL_BIG || level == MARIO_LEVEL_FIRE)
 		{
 			top = y;
@@ -2203,8 +2253,8 @@ void CMario::GetBoundingBox(float &left, float &top, float &right, float &bottom
 				left = x - 5;
 			}
 			//left = x + 15;
-			top = y;
-			bottom = top + MARIO_BIG_BBOX_HEIGHT;
+			top = y+16;
+			bottom = top + 12;
 		}
 		else if (level == 4 && !IsAttacking)
 		{

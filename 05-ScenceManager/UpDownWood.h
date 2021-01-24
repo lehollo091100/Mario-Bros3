@@ -1,6 +1,6 @@
 #pragma once
 #include"GameObject.h"
-#define WOOD_VX	0.04f
+#define WOOD_VX	0.02f
 #define WOOD_ANI	0
 #define WOOD_STATE_NORMAL	100
 #define WOOD_STATE_DOWN		200
@@ -25,8 +25,8 @@ public:
 		type = GType::UPDOWNWOOD;
 		SetHealth(1);
 		nx = -1;
-		vx = 0;
-		//vx = nx * WOOD_VX;
+		//vx = 0;
+		vx = nx * WOOD_VX;
 		vy = 0;
 		SetState(WOOD_STATE_NORMAL);
 	};

@@ -15,7 +15,6 @@ public:
 	void push_backGrid(LPGAMEOBJECT obj,int left,int top,int right,int bottom ,bool Check = false);
 	Grid()
 	{
-
 	};
 	~Grid() {}
 	void GetListObj(vector<CGameObject*>& LstObj, int camwidth, int camheight, float camX, float camY);

@@ -14,12 +14,16 @@
 #define BRICK_STATE_NORMAL 1
 #define SBRICK_STATE_NOTHINGLEFT 2
 #define SBRICK_STATE_DISAPPEAR	3
+#define SBRICK_STATE_TURN_COIN	4
 
 class CShinningBrick : public CGameObject
 {
 	int width, height, startY;
 	bool StartDisappear;
-
+	int num;
+	DWORD time;
+	float x1, x2, x3, x4, y1, y2, y3, y4;
+	float vx1, vx2, vx3, vx4, vy1, vy2, vy3, vy4;
 public:
 	CShinningBrick();
 	void SetState(int state);

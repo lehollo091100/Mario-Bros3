@@ -6,6 +6,7 @@
 #define RANGE		400
 #define BBOX_WIDTH	16
 #define BBOX_HEIGHT	25
+#define RANGE	40
 class FlyUpDownKoopas:public CGameObject
 {
 	float startY;

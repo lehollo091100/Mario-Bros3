@@ -327,20 +327,23 @@ void CPlayScene::_ParseSection_OBJECTS(string line,int l,int t,int r,int b )
 		b = (int)(b / 120);
 		grid->push_backGrid(obj, (int)l, (int)t, (int)r, (int)b);*/
 		grid->push_backGrid(obj, l, t, r, b);
-		DebugOut(L"debug325:%d %d %d %d %d\n", obj->type, (int)l, (int)t, (int)r, (int)b);
+		//DebugOut(L"debug325:%d %d %d %d %d\n", obj->type, (int)l, (int)t, (int)r, (int)b);
 		//objects.push_back(obj);
 	}
 }
 
 void CPlayScene::Load()
 {
-	ifstream ifs("gridinfo.txt", ios::in);
+	string filegrid;
+	
+		filegrid = "C:/Users/Admin/Documents/Mario Bros 3/Mario-Bros3/LoadGrid/gridinfo"+to_string(mapid)+".txt";
+	ifstream ifs(filegrid, ios::in);
 	DebugOut(L"[INFO] Start loading scene resources from : %s \n", sceneFilePath);
 	string filepath;
-	filepath = "inputObjects" + to_string(mapid)+".txt";
-	Loader *load = new Loader();
+	//filepath = "inputObjects" + to_string(mapid)+".txt";
+	/*Loader *load = new Loader();
 
-	load->LoadGrid(filepath);
+	load->LoadGrid(filepath);*/
 	ifstream f;
 	f.open(sceneFilePath);
 
@@ -399,10 +402,18 @@ void CPlayScene::Load()
 
 void CPlayScene::Update(DWORD dt)
 {
-	DebugOut(L"mapid:%d\n", mapid);
-	grid->GetListObj(objects, 335, 224, CGame::GetInstance()->GetCamX(), CGame::GetInstance()->GetCamY());
-	//DebugOut(L"size:%d\n", objects.size());
-	grid->ClearGrid(335,224,CGame::GetInstance()->GetCamX(), CGame::GetInstance()->GetCamY());
+	//DebugOut(L"mapid:%d\n", mapid);
+	if (mapid == 5) {
+		grid->GetListObj(objects, 290, 224, player->x - 165, CGame::GetInstance()->GetCamY());
+		//DebugOut(L"size:%d\n", objects.size());
+		grid->ClearGrid(290, 224, player->x - 165, CGame::GetInstance()->GetCamY());
+	}
+	else
+	{
+		grid->GetListObj(objects, 330, 224, player->x - 165, CGame::GetInstance()->GetCamY());
+		grid->ClearGrid(330, 224, player->x - 165, CGame::GetInstance()->GetCamY());
+
+	}
 	// We know that Mario is the first object in the list hence we won't add him into the colliable object list
 	// TO-DO: This is a "dirty" way, need a more organized way 
 	vector<LPGAMEOBJECT> object2;
@@ -468,23 +479,7 @@ void CPlayScene::Update(DWORD dt)
 			}
 			if (objects[i]->GetType() == GType::SHINNINGBRICK && (objects[i]->GetState() == SBRICK_STATE_NOTHINGLEFT))
 			{
-				float qx, qy;
-				objects[i]->GetPosition(qx, qy);
-				objects[i]->SetHealth(0);
-
-				/*if(player->nx>0)
-					player->x -= 7;
-				else
-				{
-					player->x += 5;
-				}*/
-				CBrownCoin *BCoin = new CBrownCoin();
-				BCoin->SetPosition(qx, qy);
-				CAnimationSets * animation_sets = CAnimationSets::GetInstance();
-				LPANIMATION_SET ani_set = animation_sets->Get(12);
-				BCoin->SetAnimationSet(ani_set);
-				objects.push_back(BCoin);
-
+				
 			}
 			if (objects[i]->GetType() == GType::CPBRICK && (objects[i]->GetState() == CPBRICK_STATE_NOTHINGLEFT))
 			{
@@ -494,20 +489,14 @@ void CPlayScene::Update(DWORD dt)
 				CPItem *PItem = new CPItem();
 				PItem->SetPosition(qx, qy - NUM_20);
 				objects.push_back(PItem);
-				/*for (size_t i = 0; i < objects.size(); i++) {
-					if (objects[i]->GetType() == GType::SHINNINGBRICK&&objects[i]->GetState() != SBRICK_STATE_NOTHINGLEFT)
-					{
-						objects[i]->SetState(SBRICK_STATE_NOTHINGLEFT);
-					}
-				}*/
 
 			}
 			if (objects[i]->GetType() == GType::PITEM && (objects[i]->GetState() == PITEM_STATE_COLLISION))
 			{
 				for (size_t i = 0; i < objects.size(); i++) {
-					if (objects[i]->GetType() == GType::SHINNINGBRICK&&objects[i]->GetState() != SBRICK_STATE_NOTHINGLEFT)
+					if (objects[i]->GetType() == GType::SHINNINGBRICK&&objects[i]->GetState() == BRICK_STATE_NORMAL)
 					{
-						objects[i]->SetState(SBRICK_STATE_NOTHINGLEFT);
+						objects[i]->SetState(SBRICK_STATE_TURN_COIN);
 					}
 				}
 			}
@@ -647,11 +636,14 @@ void CPlayScene::Update(DWORD dt)
 	}
 	if (player->IsPortal == true)
 	{
+		if(player->NextScene!=2)
+			hud->time = 300;
 		CGame::GetInstance()->SwitchScene(player->NextScene);
 
 	}
 	if (mapid == 5)
 	{
+		
 		CGame::GetInstance()->SetCamPos(cx, 10);
 	}
 }
@@ -693,7 +685,7 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 
 	//DebugOut(L"[INFO] KeyDown: %d\n", KeyCode);
 	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
-	if (mario->GetState() == MARIO_STATE_DIE || mario->IsEndGame == true)
+	if (mario->GetState() == MARIO_STATE_DIE||  mario->IsEndGame == true)
 		return;
 	//DebugOut(L"int: %d\n", mario->IsJumping);
 	int id = ((CPlayScene*)scence)->GetMapID();
