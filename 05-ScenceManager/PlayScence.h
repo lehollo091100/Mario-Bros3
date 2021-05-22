@@ -61,6 +61,7 @@ public:
 	float nextX, nextY;
 	int levelbackup;
 	bool Iscreated;
+	float cam1;
 public:
 	CPlayScene(int id, LPCWSTR filePath);
 

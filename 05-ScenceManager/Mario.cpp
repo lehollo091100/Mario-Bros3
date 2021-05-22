@@ -104,7 +104,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			if (IsJumping || IsFlying)
 			{
 				if (vy > 0) {
-					Gravity += 0.00011f;
+					Gravity += MARIO_GRAVITY_INCREASE;
 					vy += Gravity * dt;
 				}
 			}
@@ -355,8 +355,13 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	// reset untouchable timer if untouchable time has passed
 	if (GetTickCount() - untouchable_start > MARIO_UNTOUCHABLE_TIME)
 	{
-		untouchable_start = 0;
-		untouchable = 0;
+		untouchable++;
+		if (GetTickCount64() - untouchable_start > 5000)
+		{
+			untouchable_start = 0;
+			untouchable = 0;
+			untouchable = false;
+		}
 	}
 
 	// No collision occured, proceed normally
@@ -637,7 +642,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					else
 					{
 						wood->SetState(WOOD_STATE_DOWN);
-						//y += e->ny * 0.1f;
+						y += e->ny * 0.4f;
 						IsOnGround = true;
 						if (IsFalling) {
 							IsFalling = false;
@@ -687,7 +692,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					}
 					else {
 						z = 0;
-						y += e->ny * 0.4f;
+						//y += e->ny * 0.4f;
 						IsOnGround = true;
 						if (IsFalling) {
 							IsFalling = false;
@@ -1224,7 +1229,6 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				}
 				case GType::SHINNINGBRICK:
 				{
-					DebugOut(L"line 1227\n");
 					if (coObjects->at(i)->GetState() == BRICK_STATE_NORMAL)
 					{
 
@@ -1237,8 +1241,6 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 									//DebugOut(L"line 926 mario\n");
 									coObjects->at(i)->SubHealth(1);
 									coObjects->at(i)->SetState(SBRICK_STATE_NOTHINGLEFT);
-									DebugOut(L"line 1238\n");
-
 									break;
 									//coObjects->at(i)->SubHealth(1);
 								}
@@ -1299,7 +1301,9 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 								}
 							}
 							else {
-								coObjects->at(i)->SetHealth(0);
+								coObjects->at(i)->SubHealth(1);
+								coObjects->at(i)->SetState(SBRICK_STATE_NOTHINGLEFT);
+								break;
 							}
 							break;
 						}
@@ -1658,6 +1662,10 @@ void CMario::Render()
 					else if (nx < 0)
 						ani = MARIO_ANI_SIT_LEFT;
 				}
+				if (IsInPipe)
+				{
+					ani = MARIO_BIG_ANI_GO_IN_PIPE;
+				}
 
 			}
 			else if (level == MARIO_LEVEL_TAIL)
@@ -1676,7 +1684,7 @@ void CMario::Render()
 				else
 					ani = MARIOTAIL_ANI_IDLE_LEFT;
 
-				if (state == MARIO_STATE_WALKING_RIGHT)
+				if (state == MARIO_STATE_WALKING_RIGHT||IsEndGame==true)
 					ani = MARIOTAIL_ANI_WALK_RIGHT;
 				if (state == MARIO_STATE_WALKING_LEFT)
 					ani = MARIOTAIL_ANI_WALK_LEFT;
@@ -1767,7 +1775,7 @@ void CMario::Render()
 					ani = MARIOWHITE_ANI_IDLE_RIGHT;
 				else
 					ani = MARIOWHITE_ANI_IDLE_LEFT;
-				if (state == MARIO_STATE_WALKING_RIGHT)
+				if (state == MARIO_STATE_WALKING_RIGHT||IsEndGame==true)
 					ani = MARIOWHITE_ANI_WALK_RIGHT;
 				if (state == MARIO_STATE_WALKING_LEFT)
 					ani = MARIOWHITE_ANI_WALK_LEFT;
@@ -1856,6 +1864,10 @@ void CMario::Render()
 						ani = MARIOWHITE_ANI_SIT_LEFT;
 					}
 				}
+				if (IsInPipe)
+				{
+					ani = MARIO_FIRE_ANI_GO_IN_PIPE;
+				}
 
 			}
 			else if (level == MARIO_LEVEL_SMALL)
@@ -1891,13 +1903,6 @@ void CMario::Render()
 					else if (nx < 0)
 						ani = MARIOSMALL_ANI_RUN_LEFT;
 				}
-				/*if (state == MARIO_STATE_ATTACK_TAIL)
-				{
-					if (nx > 0)
-						ani = MARIOTAIL_ANI_ATTACKRIGHT;
-					else if (nx < 0)
-						ani = MARIOTAIL_ANI_ATTACKLEFT;
-				}*/
 				if (state == MARIO_STATE_JUMP)
 				{
 					if (nx > 0)
@@ -1911,6 +1916,10 @@ void CMario::Render()
 						ani = MARIOSMALL_ANI_FLYRIGHT;
 					else if (nx < 0)
 						ani = MARIOSMALL_ANI_FLYLEFT;
+				}
+				if (IsInPipe)
+				{
+					ani = MARIO_SMALL_ANI_GO_IN_PIPE;
 				}
 
 			}
@@ -1937,12 +1946,25 @@ void CMario::Render()
 		ani = MARIO_ANI_START_SCENE;
 	}
 	int alpha = 255;
-	if (untouchable) alpha = 128;
+	/*if (untouchable==0)
+	{
+		if(untouchable%3==0)
+			animation_set->at(ani)->Render(x, y, 32);
+		else 
+			animation_set->at(ani)->Render(x, y, 255);
+		return;
+
+	}
+	else { animation_set->at(ani)->Render(x, y, 128); 
+		return;
+	}*/
+
+		//alpha = 128;
 	//if (nx == 1)
 	for (int i = 0; i < LstWeapon.size(); i++) {
 		LstWeapon[i]->Render();
 	}
-	animation_set->at(ani)->Render(x, y, alpha);
+	animation_set->at(ani)->Render(x, y, 255);
 	RenderBoundingBox();
 }
 
@@ -2142,8 +2164,17 @@ void CMario::SetState(int state)
 	case MARIO_STATE_DIE:
 		if (!IsDie)
 		{
-			vy = -MARIO_DIE_DEFLECT_SPEED / 2;
+			if (level != 1)
+			{
+				StartUntouchable();
+				level -= 1;
+			}
+			else
+			{
+
+				vy = -MARIO_DIE_DEFLECT_SPEED / 2;
 			IsDie = true;
+			}
 		}
 		else
 		{
@@ -2244,13 +2275,13 @@ void CMario::GetBoundingBox(float &left, float &top, float &right, float &bottom
 		{
 			if (nx == 1)
 			{
-
-				right = x + MARIO_TAIL_BBOX_WIDTH_ATTACK;
+				left = x + 10;
+				right = left + MARIO_TAIL_BBOX_WIDTH_ATTACK;
 			}
-			else
+			else if(nx==-1)
 			{
-				right = x + MARIO_TAIL_BBOX_WIDTH;
-				left = x - 5;
+				left = x - 10;
+				right = left + MARIO_TAIL_BBOX_WIDTH_ATTACK;
 			}
 			//left = x + 15;
 			top = y+16;
@@ -2258,9 +2289,20 @@ void CMario::GetBoundingBox(float &left, float &top, float &right, float &bottom
 		}
 		else if (level == 4 && !IsAttacking)
 		{
-			top = y;
-			right = x + MARIO_TAIL_BBOX_WIDTH;
-			bottom = y + MARIO_BIG_BBOX_HEIGHT;
+			if (nx == 1)
+			{
+				left = x + 10;
+				top = y;
+				right = left + MARIO_TAIL_BBOX_WIDTH;
+				bottom = y + MARIO_BIG_BBOX_HEIGHT;
+			}
+			if (nx == -1)
+			{
+				left = x;
+				top = y;
+				right = left + MARIO_TAIL_BBOX_WIDTH;
+				bottom = y + MARIO_BIG_BBOX_HEIGHT;
+			}
 			if (state == MARIO_STATE_SIT)
 			{
 				right = x + 10;

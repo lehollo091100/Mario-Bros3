@@ -25,14 +25,11 @@ void Map::Drawmap()
 	RECT r;
 	int FrameW = TexW / TexCol;
 	int FrameH = TexH / TexRow;
-	//DebugOut(L"%d %d \n", FrameW, FrameH);
-	//DebugOut(L"Row%dcol%d\n",MapRow,MapCol);
 	for (int i = 0; i < MapRow; i++)
 	{
 		for (int j = 0; j < MapCol; j++)
 		{
 			int IdFrame = map[i][j];
-			int h = i * FrameH;
 			r.left = (IdFrame - 1) % TexCol * FrameW;
 			r.top = (IdFrame - 1) / TexCol * FrameH;
 			r.right = r.left + FrameW;
@@ -48,7 +45,6 @@ void Map::SetMap(int Id)
 	string TexLink;
 	ifstream ifs("MapInfo.txt", ios::in);
 	ifs >> nMap;
-	//DebugOut(L"nMap%d\n", nMap);
 	if (mapId > nMap)
 		return;
 	for (int i = 0; i < mapId; i++)
@@ -61,7 +57,7 @@ void Map::SetMap(int Id)
 	LPCSTR FName = TexLink.c_str();
 	D3DXIMAGE_INFO info;
 	HRESULT result = D3DXGetImageInfoFromFileA(FName, &info);
-	DebugOut(L"Texlink:%c\n", TexLink.c_str());
+	//DebugOut(L"Texlink:%c\n", TexLink.c_str());
 	if (result != D3D_OK)
 	{
 		DebugOut(L"[ERROR] GetImageInfoFromFile failed\n");

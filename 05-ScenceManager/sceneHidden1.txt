@@ -880,7 +880,7 @@ ENDGAMEITEM UP
 13	210	106	12	16	16
 # --- SCENE PORTAL ----
 # type	l	t	ani_set_id	r	b	scene_id
-50	350	0	1	383	25	1	2321	380
+50	350	0	1	383	25	1	2321	350
 [MAP]
 col row
 

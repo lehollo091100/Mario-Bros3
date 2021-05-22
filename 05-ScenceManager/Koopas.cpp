@@ -25,7 +25,7 @@ CKoopas::CKoopas(CMario *m, int range)
 
 void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
-	DebugOut(L"koopas y:%f\n", y);
+	//DebugOut(L"koopas y:%f\n", y);
 	//DebugOut(L"2:%f\n", vx);
 	if (health <= 0)
 	{
@@ -101,6 +101,8 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	// No collision occured, proceed normally
 	if (coEvents.size() == 0)
 	{
+		//nx = -nx;
+		//vx = nx * KOOPAS_WALKING_SPEED;
 		x += dx;
 		y += dy;
 	}
@@ -112,13 +114,60 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 		FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nx, ny, rdx, rdy);
 
-		x += min_tx * dx + nx * 0.4f;
-		y += min_ty * dy + ny * 0.1f;
+		x += min_tx * dx + nx * 0.04f;
+		y += min_ty * dy + ny * 0.04f;
 		//if (nx != 0) vx = 0;
 		if (ny != 0) vy = 0;
 		for (UINT i = 0; i < coEventsResult.size(); i++)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
+			if (e->obj->GetType() == GType::SHINNINGBRICK)
+			{
+				CShinningBrick *sbrick = dynamic_cast<CShinningBrick*>(e->obj);
+				if (sbrick->GetState() == BRICK_STATE_NORMAL)
+				{
+					if (e->ny != 0)
+					{
+						vy = 0;
+						y += e->ny * 0.4f;
+						bool mostleft = false, mostright = false;
+						BL = sbrick->x - 16;
+						BR = BL + 45;
+						while (!mostleft || !mostright)
+						{
+							if (!mostleft)
+							{
+
+								if (i > 0 && coEventsResult[i - 1]->obj->GetType() == GType::SHINNINGBRICK&&coEventsResult[i - 1]->obj->GetY() == e->obj->GetY())
+								{
+									BL = BL - 16;
+								}
+								else
+								{
+									mostleft = true;
+								}
+							}
+							if (!mostright)
+							{
+
+								if (i > 0 && i < coEventsResult.size() - 2 && coEventsResult[i + 1]->obj->GetType() == GType::SHINNINGBRICK&&coEventsResult[i + 1]->obj->GetY() == e->obj->GetY())
+								{
+									BR = BR + 16;
+
+								}
+								else {
+									mostright = true;
+								}
+							}
+						}
+
+					}
+				}
+				/*else {
+					x += dx;
+					y += dy;
+				}*/
+			}	
 			if (state == KOOPAS_STATE_WALKING)
 			{
 				if (e->obj->GetType() == GType::COLORBRICK || e->obj->GetType() == GType::GOOMBA)
@@ -135,48 +184,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						x += dx;
 					}
 				}
-				if (e->obj->GetType() == GType::SHINNINGBRICK)
-				{
-					CShinningBrick *sbrick = dynamic_cast<CShinningBrick*>(e->obj);
-					if (e->ny != 0)
-					{
-						vy = 0;
-						y += e->ny * 0.04f;
-						bool mostleft = false, mostright = false;
-						BL = sbrick->x - 16;
-						BR = BL + 45;
-						while (!mostleft || !mostright)
-						{
-							if (!mostleft)
-							{
-								
-								if (i > 0 && coEventsResult[i - 1]->obj->GetType() == GType::SHINNINGBRICK&&coEventsResult[i - 1]->obj->GetY() == e->obj->GetY())
-								{
-									
-									BL = BL - 16;
-
-								}
-								else
-								{
-									mostleft = true;
-								}
-							}
-							if (!mostright)
-							{
-
-								if (i>0&&i<coEventsResult.size()-2 && coEventsResult[i + 1]->obj->GetType() == GType::SHINNINGBRICK&&coEventsResult[i + 1]->obj->GetY() == e->obj->GetY())
-								{
-									BR = BR + 16;
-
-								}
-								else {
-									mostright = true;
-								}
-							}
-						}
-
-					}
-				}
+				
 				if (e->obj->GetType() == GType::BRICK) {
 					if (e->nx != 0)
 					{
@@ -185,6 +193,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					}
 					if (e->ny != 0)
 					{
+						//y += e->ny*0.4f;
 						BL = -99999;
 						BR = 99990;
 					}
@@ -241,7 +250,9 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					}
 					else if (e->obj->GetType() == GType::SHINNINGBRICK)
 					{
-						e->obj->SubHealth(2);
+						e->obj->SubHealth(1);
+						e->obj->SetState(SBRICK_STATE_NOTHINGLEFT);
+						//coObjects->at(i)->SetState(SBRICK_STATE_NOTHINGLEFT);
 						//e->obj->SetState(SBRICK_STATE_NOTHINGLEFT);
 						x -= -(this->nx) * 0.04f;
 						this->nx = -this->nx;

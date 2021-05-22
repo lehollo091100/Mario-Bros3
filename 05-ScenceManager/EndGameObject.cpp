@@ -61,6 +61,8 @@ void EndGameObject::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		{
 			//health = 1;
 			this->SetState(STATE_BOARD);
+			vy = 0;
+			x -= 50;
 		}
 	
 	if (state == STATE_BOARD)
@@ -166,9 +168,9 @@ void EndGameObject::SetState(int state)
 	case STATE_BOARD:
 	{
 		vy = 0;
+		this->SetPosition(this->x - 70, STARTY );
 		this->state = STATE_BOARD;
 		//this->y = STARTY - 20;
-		this->SetPosition(this->x - 70, STARTY-20 );
 		break;
 
 	}

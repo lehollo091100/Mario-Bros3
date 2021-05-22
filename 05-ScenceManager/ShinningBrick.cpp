@@ -1,4 +1,5 @@
 #include "ShinningBrick.h"
+
 CShinningBrick::CShinningBrick()
 {
 	type = GType::SHINNINGBRICK;
@@ -21,7 +22,7 @@ CShinningBrick::CShinningBrick()
 }
 void CShinningBrick::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
-	DebugOut(L"health:%d\n", health);
+	//DebugOut(L"health:%d\n", health);
 	if (health == 0)
 	{
 		IsDie = true;

@@ -156,13 +156,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line,int l,int t,int r,int b )
 		y1 = atoi(tokens[8].c_str());
 		//DebugOut(L"nextX%f\n:", x1);
 		obj = new CPortal(x, y, r, b, scene_id, x1, y1);
-		/*float l1, t1, r1, b1;
-		obj->GetBoundingBox(l1, t1, r1, b1);
-		l1 = (int)(l / 165);
-		t1 = (int)(t / 120);
-		r1 = (int)(r / 165);
-		b1 = (int)(b / 120);
-		grid->push_backGrid(obj, (int)l1, (int)t1, (int)r1, (int)b1);*/
 		break;
 	}
 	case OBJECT_TYPE_MARIO: {
@@ -319,13 +312,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line,int l,int t,int r,int b )
 		obj->SetAnimationSet(ani_set);
 	}
 	if (obj != NULL) {
-		/*float l, t, r, b;
-		obj->GetBoundingBox(l, t, r, b);
-		l = (int)(l / 165);
-		t = (int)(t / 120);
-		r = (int)(r / 165);
-		b = (int)(b / 120);
-		grid->push_backGrid(obj, (int)l, (int)t, (int)r, (int)b);*/
 		grid->push_backGrid(obj, l, t, r, b);
 		//DebugOut(L"debug325:%d %d %d %d %d\n", obj->type, (int)l, (int)t, (int)r, (int)b);
 		//objects.push_back(obj);
@@ -335,7 +321,11 @@ void CPlayScene::_ParseSection_OBJECTS(string line,int l,int t,int r,int b )
 void CPlayScene::Load()
 {
 	string filegrid;
-	
+	if (mapid == 5)
+	{
+		if(player->x<300)
+			cam1 = 0;
+	}
 		filegrid = "C:/Users/Admin/Documents/Mario Bros 3/Mario-Bros3/LoadGrid/gridinfo"+to_string(mapid)+".txt";
 	ifstream ifs(filegrid, ios::in);
 	DebugOut(L"[INFO] Start loading scene resources from : %s \n", sceneFilePath);
@@ -385,7 +375,7 @@ void CPlayScene::Load()
 			int l, t, r, b;
 			ifs >>l>> l >> t >> r >> b;
 			_ParseSection_OBJECTS(line,l,t,r,b); 
-			DebugOut(L"left,top,right,bottom: %d %d %d %d \n", l, t, r, b);
+			//DebugOut(L"left,top,right,bottom: %d %d %d %d \n", l, t, r, b);
 			break; 
 		}
 		}
@@ -404,9 +394,9 @@ void CPlayScene::Update(DWORD dt)
 {
 	//DebugOut(L"mapid:%d\n", mapid);
 	if (mapid == 5) {
-		grid->GetListObj(objects, 290, 224, player->x - 165, CGame::GetInstance()->GetCamY());
+		grid->GetListObj(objects, 290, 224, CGame::GetInstance()->GetCamX(), CGame::GetInstance()->GetCamY());
 		//DebugOut(L"size:%d\n", objects.size());
-		grid->ClearGrid(290, 224, player->x - 165, CGame::GetInstance()->GetCamY());
+		grid->ClearGrid(290, 224, CGame::GetInstance()->GetCamX(), CGame::GetInstance()->GetCamY());
 	}
 	else
 	{
@@ -593,7 +583,7 @@ void CPlayScene::Update(DWORD dt)
 	// Update camera to follow mario
 	float cx, cy;
 	player->GetPosition(cx, cy);
-
+	
 	CGame *game = CGame::GetInstance();
 	cx -= game->GetScreenWidth() / 2;
 	cy -= game->GetScreenHeight() / (2.25);
@@ -643,8 +633,21 @@ void CPlayScene::Update(DWORD dt)
 	}
 	if (mapid == 5)
 	{
-		
-		CGame::GetInstance()->SetCamPos(cx, 10);
+		if (player->x < cam1)
+		{
+			player->NextX = 206;
+			player->NextY = 55;
+			//player->SetPosition(206, 53);
+			CGame::GetInstance()->SwitchScene(3);
+		}
+		if (player->x > 2100)
+		{
+			CGame::GetInstance()->SetCamPos(cx, 10);
+		}
+		else {
+			cam1 += 0.8;
+			CGame::GetInstance()->SetCamPos(cam1, 10);
+		}
 	}
 }
 
@@ -654,7 +657,10 @@ void CPlayScene::Render()
 	player->Render();
 	//player->RenderBoundingBox();
 	for (int i = 0; i < objects.size(); i++)
+	{
 		objects[i]->Render();
+		objects[i]->RenderBoundingBox();
+	}
 	if (mapid != 3 && mapid != 4)
 		hud->Render();
 }
@@ -718,7 +724,7 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 		}
 		case DIK_6:
 		{
-			mario->SetPosition(1210, 370);
+			mario->SetPosition(2210, 370);
 			break;
 		}
 		case DIK_7:

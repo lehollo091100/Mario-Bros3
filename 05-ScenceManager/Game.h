@@ -48,6 +48,10 @@ class CGame
 	void _ParseSection_SCENES(string line);
 
 public:
+	CGame() {
+		cam_x = 0.0f;
+		cam_y = 0.0f;
+	}
 	void InitKeyboard();
 	void SetKeyHandler(LPKEYEVENTHANDLER handler) { keyHandler = handler; }
 	void Init(HWND hWnd);
@@ -63,8 +67,8 @@ public:
 
 	int GetScreenWidth() { return screen_width; }
 	int GetScreenHeight() { return screen_height; }
-	float GetCamX() { return cam_x; }
-	float GetCamY() { return cam_y; }
+	float GetCamX() { return this->cam_x; }
+	float GetCamY() { return this->cam_y; }
 
 	static void SweptAABB(
 		float ml,			// move left 
