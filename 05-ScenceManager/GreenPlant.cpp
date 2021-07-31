@@ -103,36 +103,36 @@ void GreenPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 	CGameObject::Update(dt, coObjects);
 	y += dy;
-	CalcPotentialCollisions(coObjects, coEvents);
-	if (coEvents.size() == 0)
-	{
-		//x -= dx;
-		y += dy;
-	}
-	else
-	{
-		float min_tx, min_ty, nx = 0, ny;
-		float rdx = 0;
-		float rdy = 0;
+	//CalcPotentialCollisions(coObjects, coEvents);
+	//if (coEvents.size() == 0)
+	//{
+	//	//x -= dx;
+	//	y += dy;
+	//}
+	//else
+	//{
+	//	float min_tx, min_ty, nx = 0, ny;
+	//	float rdx = 0;
+	//	float rdy = 0;
 
-		FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nx, ny, rdx, rdy);
+	//	FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nx, ny, rdx, rdy);
 
-		x += min_tx * dx + nx * 0.4f;
-		y += min_ty * dy + ny * 0.4f;
-		//if (nx != 0) vx = 0;
-		//if (ny != 0) vy = 0;
-		for (UINT i = 0; i < coEventsResult.size(); i++)
-		{
-			LPCOLLISIONEVENT e = coEventsResult[i];
-			/*if (e->obj->GetType() == GType::PIPE)
-			{
-				if (this->vy != 0)
-					y += dy;
-			}*/
+	//	x += min_tx * dx + nx * 0.4f;
+	//	y += min_ty * dy + ny * 0.4f;
+	//	//if (nx != 0) vx = 0;
+	//	//if (ny != 0) vy = 0;
+	//	for (UINT i = 0; i < coEventsResult.size(); i++)
+	//	{
+	//		LPCOLLISIONEVENT e = coEventsResult[i];
+	//		/*if (e->obj->GetType() == GType::PIPE)
+	//		{
+	//			if (this->vy != 0)
+	//				y += dy;
+	//		}*/
 
-		}
-	}
-	for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
+	//	}
+	//}
+	//for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
 }
 
 void GreenPlant::Render()

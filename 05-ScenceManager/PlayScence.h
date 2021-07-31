@@ -34,6 +34,9 @@
 #include"FlyUpDownKoopas.h"
 #include"Grid.h"
 #include"BrokenBrick.h"
+#include "CSongBrick.h"
+#include "CounterBrick.h"
+#include "Extrasongbrick.h"
 #define BBOX_16	16
 #define NUM_20	20
 #define HUD_ANIMATION_SETS_ID	53
@@ -47,6 +50,8 @@ protected:
 	CHUD *hud = CHUD::GetInstance();
 	Grid *grid;
 	vector<LPGAMEOBJECT> objects;
+	vector<LPGAMEOBJECT> mObjects;
+	vector<LPGAMEOBJECT> staticObjects;
 	int mapid;
 	
 

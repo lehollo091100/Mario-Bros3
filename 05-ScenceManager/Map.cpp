@@ -10,6 +10,7 @@ Map *Map::GetInstance()
 void Map::ReadMap()
 {
 	ifstream ifs(MapLink, ios::in);
+	DebugOut(L"");
 	ifs >> MapRow >> MapCol;
 	for(int i=0;i<MapRow;i++)
 		for (int j = 0; j < MapCol; j++)
@@ -25,19 +26,44 @@ void Map::Drawmap()
 	RECT r;
 	int FrameW = TexW / TexCol;
 	int FrameH = TexH / TexRow;
-	for (int i = 0; i < MapRow; i++)
+	int camxleft = CGame::GetInstance()->GetCamX() / 16;
+	int camxright = (CGame::GetInstance()->GetCamX() + CGame::GetInstance()->GetScreenWidth()) / 16;
+	int camytop = CGame::GetInstance()->GetCamY() / 16;
+	int camybot = (CGame::GetInstance()->GetCamY() + CGame::GetInstance()->GetScreenHeight()) / 16;
+	//DebugOut(L"%d %d\n", camxright, camybot);
+	if (mapId == 4)
 	{
-		for (int j = 0; j < MapCol; j++)
+		for (int i = 0; i <= 15; i++)
 		{
-			int IdFrame = map[i][j];
-			r.left = (IdFrame - 1) % TexCol * FrameW;
-			r.top = (IdFrame - 1) / TexCol * FrameH;
-			r.right = r.left + FrameW;
-			r.bottom = r.top + FrameH;
-			CGame::GetInstance()->Draw(j * FrameW , i * FrameH , tex,r.left, r.top, r.right, r.bottom);
+			for (int j = 0; j <= 19; j++)
+			{
+				int IdFrame = map[i][j];
+				r.left = (IdFrame - 1) % TexCol * FrameW;
+				r.top = (IdFrame - 1) / TexCol * FrameH;
+				r.right = r.left + FrameW;
+				r.bottom = r.top + FrameH;
+				CGame::GetInstance()->Draw(j * FrameW, i * FrameH, tex, r.left, r.top, r.right, r.bottom);
+			}
+
 		}
-		
 	}
+	else
+	{
+		for (int i = camytop; i <= camybot; i++)
+		{
+			for (int j = camxleft; j <= camxright; j++)
+			{
+				int IdFrame = map[i][j];
+				r.left = (IdFrame - 1) % TexCol * FrameW;
+				r.top = (IdFrame - 1) / TexCol * FrameH;
+				r.right = r.left + FrameW;
+				r.bottom = r.top + FrameH;
+				CGame::GetInstance()->Draw(j * FrameW, i * FrameH, tex, r.left, r.top, r.right, r.bottom);
+			}
+
+		}
+	}
+	
 }
 void Map::SetMap(int Id)
 {
@@ -60,7 +86,7 @@ void Map::SetMap(int Id)
 	//DebugOut(L"Texlink:%c\n", TexLink.c_str());
 	if (result != D3D_OK)
 	{
-		DebugOut(L"[ERROR] GetImageInfoFromFile failed\n");
+		DebugOut(L"[ERROR] GetImageInfo failed\n");
 		return;
 	}
 	TexH = info.Height;

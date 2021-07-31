@@ -10,6 +10,7 @@
 
 #define GOOMBA_STATE_WALKING 100
 #define GOOMBA_STATE_DIE 200
+#define GOOMBA_STATE_DIE_UP	300
 
 #define GOOMBA_ANI_WALKING 0
 #define GOOMBA_ANI_DIE 1
@@ -22,7 +23,7 @@ public:
 	virtual void Render();
 	DWORD diestart;
 	int time;
-
+	float startY;
 public:
 	bool IsWalking,Isdie;
 	CGoomba();

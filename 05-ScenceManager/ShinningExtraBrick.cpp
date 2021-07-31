@@ -4,24 +4,25 @@
 
 void ShinningExtraBrick::SetState(int state)
 {
+	CGameObject::SetState(state);
 	switch (state)
 	{
 	case EXTRABRICK_STATE_NORMAL:
 	{
-		this->state = EXTRABRICK_STATE_NORMAL;
 		vy = 0;
+		if (startY != y) {
+			y = startY;
+		}
 		break;
 	}
 	case EXTRABRICK_STATE_COLLISION:
 	{
-		this->state = EXTRABRICK_STATE_COLLISION;
 		vy = -BRICK_SPEED_Y;
 		break;
 	}
 	case EXTRABRICK_STATE_NOTHINGLEFT:
 	{
 		vy = 0;
-		this->state = EXTRABRICK_STATE_NOTHINGLEFT;
 		break;
 	}
 	default:
@@ -32,35 +33,45 @@ void ShinningExtraBrick::SetState(int state)
 void ShinningExtraBrick::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	
-	if (vy == 0)
-		startY = this->y;
+	if (startY == 0)
+	{
+		startY = y;
+	}
 	CGameObject::Update(dt, coObjects);
 	y += dy;
-	if (this->y < startY - EXTRABIRCK_MAX_HEIGHT)
+	if (state == EXTRABRICK_STATE_COLLISION)
 	{
-		vy = BRICK_SPEED_Y;
-	}
-	if (startY-y<0)
-	{
-			if (this->number == 0)
+		if(vy<0)
+		{ 
+			if (y < startY - EXTRABIRCK_MAX_HEIGHT)
 			{
-				this->SetState(EXTRABRICK_STATE_NOTHINGLEFT);
-
+				vy = BRICK_SPEED_Y;
 			}
-			else {
+		}
+		else
+		{
+			if (startY - y < 0)
+			{
+				if (this->number == 0)
+				{
+					SetState(EXTRABRICK_STATE_NOTHINGLEFT);
 
-		this->SetState(EXTRABRICK_STATE_NORMAL);
+				}
+				else {
+					SetState(EXTRABRICK_STATE_NORMAL);
+				}
+				/*else {
+				}*/
 			}
-		/*else {
-		}*/
+		}
 	}
-	for(int i=0;i<listcoin.size();i++)
-		listcoin[i]->Update(dt, coObjects);
-	for (int i = 0; i < listleaf.size(); i++)
-	{
-		//listleaf[i]->GetBoundingBox(this->x, this->y, float &right, float &bottom);
-		listleaf[i]->Update(dt, coObjects);
-	}
+	//for(int i=0;i<listcoin.size();i++)
+	//	listcoin[i]->Update(dt, coObjects);
+	//for (int i = 0; i < listleaf.size(); i++)
+	//{
+	//	//listleaf[i]->GetBoundingBox(this->x, this->y, float &right, float &bottom);
+	//	listleaf[i]->Update(dt, coObjects);
+	//}
 }
 
 void ShinningExtraBrick::Render()

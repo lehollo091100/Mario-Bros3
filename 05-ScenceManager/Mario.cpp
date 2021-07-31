@@ -26,9 +26,14 @@
 #include"UpDownWood.h"
 #include"ShinningExtraBrick.h"
 #include"FlyUpDownKoopas.h"
+#include "CSongBrick.h"
+#include "CounterBrick.h"
+#include "Turtle.h"
+#include "Extrasongbrick.h"
 
 CMario::CMario(float x, float y) : CGameObject()
 {
+	health = 1;
 	type = GType::MARIO;
 	level = MARIO_LEVEL_SMALL;
 	IsWalking = false;
@@ -41,6 +46,7 @@ CMario::CMario(float x, float y) : CGameObject()
 	Gravity = 0;
 	IsWalkingR = IsWalkingL = IsJumping = IsSlowDown = IsMaxspeed = IsSitting = IsDie = false;
 	IsFlying = false;
+	tail = new Tail();
 	Fire *f = new Fire(1);
 	LstWeapon.push_back(f);
 	Fire *f1 = new Fire(1);
@@ -56,16 +62,32 @@ CMario::CMario(float x, float y) : CGameObject()
 	OutPipeY = 0;
 	IsOuttingPipe = IsInPipe = CanPiping = false;
 	z = 0;
+	NextScene = 3;
 }
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
 	/*if (state == MARIO_STATE_SIT)
 		DebugOut(L"line 39 state sit\n");*/
-		//DebugOut(L"vx%f\n",vx);
+		//DebugOut(L"vx vy: %f %f \n",vx,vy);
 	if (x <= 0)
 		x = 0;
+	if (!IsAttacking)
+	{
+
+	if (nx == 1)
+	{
+		tail->x = x;
+		tail->y = y + EIGHTTEEN;
+	}
+	else if(nx==-1)
+	{
+		tail->x = x+THIRTEEN;
+		tail->y = y + EIGHTTEEN;
+	}
+	}
 	CGameObject::Update(dt);
+	tail->Update(dt, coObjects);
 	vector<LPCOLLISIONEVENT> coEvents;
 	vector<LPCOLLISIONEVENT> coEventsResult;
 	coEvents.clear();
@@ -114,13 +136,40 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		time = now - startfly;
 		
 		//DebugOut(L"TIME:%d\n",time);
-		if (IsAttacking && now - LastimeAttack > 470 && level == MARIO_LEVEL_TAIL)
+		if (IsAttacking && now - LastimeAttack > TIMEATTACK_LAST && level == MARIO_LEVEL_TAIL)
 		{
 			/*if(IsOnGround)
 				y -= 16;*/
 			IsAttacking = false;
 			state = MARIO_STATE_IDLE;
 		}
+		if (IsAttacking && (now - LastimeAttack >0&& now- LastimeAttack<= TIME_ATTACK_FIRST) && level == MARIO_LEVEL_TAIL)
+		{
+			if (nx == 1)
+			{
+				tail->x = x- TAILLENGHT;
+				tail->y = y + EIGHTTEEN;
+			}
+			else if (nx == -1)
+			{
+				tail->x = x + TAILLENGHT + THIRTEEN;
+				tail->y = y + EIGHTTEEN;
+			}
+		}
+		if (IsAttacking && (now - LastimeAttack > TIME_ATTACK_FIRST && now - LastimeAttack <= TIMEATTACK_LAST) && level == MARIO_LEVEL_TAIL)
+		{
+			if (nx == 1)
+			{
+				tail->x = x + THIRTEEN + TAILLENGHT;
+				tail->y = y + EIGHTTEEN;
+			}
+			else if (nx == -1)
+			{
+				tail->x = x - TAILLENGHT;
+				tail->y = y + EIGHTTEEN;
+			}
+		}
+		
 		if (IsAttacking && now - LastimeAttack > 240 && level == MARIO_LEVEL_FIRE)
 		{
 			IsAttacking = false;
@@ -384,10 +433,9 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 		// block every object first!
 		x += min_tx * dx + nx * 0.6f;
-		y += min_ty * dy + ny * 0.4f;
+		y += min_ty * dy + ny * 0.6f;
 
 		if (min_tx != 1 && min_ty != 1 && coEventsResult[1]->obj->GetType() == GType::BRICK) {
-			//DebugOut(L"line 247 coevent = brick\n");
 			IsOnGround = true;
 		}
 		/*if (nx != 0) {
@@ -401,11 +449,12 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		for (UINT i = 0; i < coEventsResult.size(); i++)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
+			//DebugOut(L"e->obj->type:%d\n", e->obj->type);
 			if (e->nx != 0) {
 				//brick or pipe
 				if (e->obj->GetType() == GType::BRICK || e->obj->GetType() == GType::PIPE || e->obj->GetType() == GType::QUESTIONBRICK||e->obj->GetType()==GType::UPDOWNWOOD) {
 					vx = this->nx*0.04f;
-					if (!IsWalking) {
+					if (!IsWalkingR &&!IsWalkingL) {
 						if (!IsSitting) {
 							//DebugOut(L"line 277 IDLE\n");
 							state = MARIO_STATE_IDLE;
@@ -431,11 +480,19 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					IsEndGame = false;
 					IsInPipe = false;
 				}
+				if (e->obj->GetType() == GType::TURTLE)
+				{
+					DebugOut(L"vx>0");
+				}
 
 			}
 
 
 			if (e->ny != 0) {
+				if (e->obj->GetType() == GType::TURTLE)
+				{
+					DebugOut(L"vy>0");
+				}
 				if (e->obj->GetType() == GType::PITEM)
 				{
 					CPItem *PItem = dynamic_cast<CPItem *>(e->obj);
@@ -453,10 +510,10 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					{
 						if (vy < 0) {
 							Gravity = 0;
-							vy += 0.005;
-							if (ExtraBrick->GetState() == EXTRABRICK_STATE_NORMAL)
+							vy += ZEROZEROZEROFIVE;
+							if (e->obj->GetState() == EXTRABRICK_STATE_NORMAL)
 							{
-								ExtraBrick->SetState(EXTRABRICK_STATE_COLLISION);
+								e->obj->SetState(EXTRABRICK_STATE_COLLISION);
 								if (ExtraBrick->kind == 1)
 								{
 									this->Coin += 1;
@@ -465,13 +522,10 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 								else {
 									this->Point += 200;
 								}
-								//ExtraBrick->number -= 1;
 							}
 							if (IsJumping) {
 								IsJumping = false;
 								IsFalling = true;
-								/*if (!IsSitting)
-									DebugOut(L"mario line 323 jump\n");*/
 								state = MARIO_STATE_FALLING;
 							}
 						}
@@ -532,7 +586,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						if (e->ny == 1) {
 							if (vy < 0) {
 								Gravity = 0;
-								vy += 0.005f;
+								vy += ZEROZEROZEROFIVE;
 							}
 							if (IsJumping) {
 								IsJumping = false;
@@ -629,7 +683,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					if (e->ny == 1) {
 						if (vy < 0) {
 							Gravity = 0;
-							vy += 0.005f;
+							vy += ZEROZEROZEROFIVE;
 						}
 						if (IsJumping) {
 							IsJumping = false;
@@ -680,7 +734,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					if (e->ny == 1) {
 						if (vy < 0) {
 							Gravity = 0;
-							vy += 0.005f;
+							vy += ZEROZEROZEROFIVE;
 						}
 						if (IsJumping) {
 							IsJumping = false;
@@ -762,12 +816,12 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						}
 					}
 				}
-				else if (e->obj->GetType() == GType::BRICK ) {
+				else if (e->obj->GetType() == GType::BRICK || e->obj->GetType()==GType::COUNTERBRICK) {
 					//DebugOut(L"line 443 MARIO\n");
 					if (e->ny == 1) {
 						if (vy < 0) {
 							Gravity = 0;
-							vy += 0.005f;
+							vy += ZEROZEROZEROFIVE;
 						}
 						if (IsJumping) {
 							IsJumping = false;
@@ -779,8 +833,9 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					}
 					else {
 						z = 0;
-						y += e->ny * 0.4f;
+						y += e->ny * ZEROPOINTFOUR;
 						IsOnGround = true;
+						IsOnSongbrick = false;
 						if (IsFalling) {
 							IsFalling = false;
 							if (vx != 0) {
@@ -816,7 +871,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					if (e->ny == 1) {
 						if (vy < 0) {
 							Gravity = 0;
-							vy += 0.005f;
+							vy += ZEROZEROZEROFIVE;
 
 							if (QBrick->GetState() != BRICK_STATE_NOTHINGLEFT) {
 
@@ -887,7 +942,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					if (e->ny == 1) {
 						if (vy < 0) {
 							Gravity = 0;
-							vy += 0.005f;
+							vy += ZEROZEROZEROFIVE;
 
 							if (PBrick->GetState() == CPBRICK_STATE_NORMAL) {
 								PBrick->SetState(CPBRICK_STATE_NOTHINGLEFT);
@@ -958,579 +1013,766 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	}
 	for (UINT i = 0; i < coObjects->size(); i++)
 	{
+
+		if (level == MARIO_LEVEL_TAIL && IsAttacking && tail->isCollisionWithObj(coObjects->at(i))->t>0 && tail->isCollisionWithObj(coObjects->at(i))->t< 1)
+		{
+			if (coObjects->at(i)->GetType() == GType::KOOPAS)
+			{
+
+				if (coObjects->at(i)->GetState() == KOOPAS_STATE_WALKING)
+				{
+					coObjects->at(i)->SubHealth(1);
+					coObjects->at(i)->SetState(KOOPAS_STATE_UP);
+				}
+				if (coObjects->at(i)->GetState() == KOOPAS_STATE_DEFEND)
+				{
+					coObjects->at(i)->SetHealth(1);
+					coObjects->at(i)->SetState(KOOPAS_STATE_DIE_UP);
+				}
+				if (coObjects->at(i)->GetState() == KOOPAS_STATE_UP)
+				{
+					coObjects->at(i)->vy -= MARIO_JUMP_DEFLECT_SPEED;
+					coObjects->at(i)->SetState(KOOPAS_STATE_UP);
+				}
+			}
+			if (coObjects->at(i)->GetType() == GType::GOOMBA)
+			{
+				coObjects->at(i)->SetState(GOOMBA_STATE_DIE_UP);
+				Point += 200;
+			}
+			if (coObjects->at(i)->GetType() == GType::FIREGREENPLANT)
+			{
+				coObjects->at(i)->SubHealth(1);
+			}
+			if (coObjects->at(i)->GetType() == GType::GREENPLANT)
+			{
+				coObjects->at(i)->SubHealth(1);
+			}
+			if (coObjects->at(i)->GetType() == GType::FIREPIRAHAPLANT)
+			{
+				coObjects->at(i)->SubHealth(1);
+			}
+			if (coObjects->at(i)->GetType()==GType::SHINNINGBRICK)
+			{
+				if (coObjects->at(i)->GetState() == BRICK_STATE_NORMAL)
+				{
+					//DebugOut(L"line 926 mario\n");
+					coObjects->at(i)->SubHealth(1);
+					coObjects->at(i)->SetState(SBRICK_STATE_NOTHINGLEFT);
+					break;
+					//coObjects->at(i)->SubHealth(1);
+				}
+			}
+
+		}
 		if (coObjects->at(i) != NULL && coObjects->at(i)->GetHealth() > 0)
 			if ((isCollisionWithObj(coObjects->at(i))->t > 0) && isCollisionWithObj(coObjects->at(i))->t < 1)
 			{
 				switch (coObjects->at(i)->GetType())
 				{
-				case GType::KOOPAS:
-				{
-					if (isCollisionWithObj(coObjects->at(i))->nx != 0) {
-						if (coObjects->at(i)->GetState() == KOOPAS_STATE_WALKING && !IsAttacking)
-						{
-							SetState(MARIO_STATE_DIE);
-						}
-						if (level == 4 && IsAttacking)
-						{
-							if (coObjects->at(i)->GetState() == KOOPAS_STATE_WALKING)
-							{
-								coObjects->at(i)->SubHealth(1);
-								coObjects->at(i)->SetState(KOOPAS_STATE_UP);
-							}
-							if (coObjects->at(i)->GetState() == KOOPAS_STATE_DEFEND)
-							{
-								coObjects->at(i)->SetHealth(1);
-								coObjects->at(i)->SetState(KOOPAS_STATE_DIE_UP);
-							}
-						}
-						if (coObjects->at(i)->GetState() == KOOPAS_STATE_DEFEND && IsHolding == false)
-						{
-
-							//koo->IsHeld = false;
-							IsKicking = true;
-							coObjects->at(i)->nx = this->nx;
-							coObjects->at(i)->SubHealth(1);
-							coObjects->at(i)->SetState(KOOPAS_STATE_ATTACK);
-						}
-						if (IsHolding && coObjects->at(i)->GetState() == KOOPAS_STATE_DEFEND)
-						{
-							//state = MARIO_STATE_HOLDTURTLE;
-							dynamic_cast<CKoopas*>(coObjects->at(i))->IsHeld = true;
-							koo = dynamic_cast<CKoopas*>(coObjects->at(i));
-						}
-
-
-						if (coObjects->at(i)->GetState() == KOOPAS_STATE_UP && IsHolding == false)
-						{
-							IsKicking = true;
-							coObjects->at(i)->nx = this->nx;
-							coObjects->at(i)->SubHealth(1);
-							coObjects->at(i)->SetState(KOOPAS_STATE_UP_ATTACK);
-						}
-						if (IsHolding && coObjects->at(i)->GetState() == KOOPAS_STATE_UP)
-						{
-
-							//state = MARIO_STATE_HOLDTURTLE;
-							dynamic_cast<CKoopas*>(coObjects->at(i))->IsHeld = true;
-							koo = dynamic_cast<CKoopas*>(coObjects->at(i));
-							//DebugOut(L"STILL HOLD\n");
-							//koo->IsHeld = true;
-						}
-						break;
-					}
-					if (isCollisionWithObj(coObjects->at(i))->ny != 0)
+					case GType::KOOPAS:
 					{
-						if (isCollisionWithObj(coObjects->at(i))->ny < 0)
-						{
-							//DebugOut(L"line 407");
-							if (coObjects->at(i)->GetState() == KOOPAS_STATE_WALKING)
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0) {
+							if (coObjects->at(i)->GetState() == KOOPAS_STATE_WALKING && !IsAttacking)
 							{
-								//DebugOut(L"Line 411 set state walking");
-								vy -= MARIO_DIE_DEFLECT_SPEED / 2;
-								coObjects->at(i)->SubHealth(1);
-								coObjects->at(i)->SetState(KOOPAS_STATE_DEFEND);
-								break;
-							}
-							if (coObjects->at(i)->GetState() == KOOPAS_STATE_DEFEND) {
-								//DebugOut(L"line 810\n");
-								if (this->x >= (coObjects->at(i)->GetX() + (KOOPAS_BBOX_WIDTH / 2)))
-								{
-									coObjects->at(i)->nx = -1;
-								}
-								else if (this->x < (coObjects->at(i)->GetX() + (KOOPAS_BBOX_WIDTH / 2)))
-								{
-									coObjects->at(i)->nx = 1;
-								}
-								coObjects->at(i)->SetState(KOOPAS_STATE_ATTACK);
-								coObjects->at(i)->SubHealth(1);
-								break;
-							}
-							if (coObjects->at(i)->GetState() == KOOPAS_STATE_UP) {
-								if (this->x >= coObjects->at(i)->GetX() + (KOOPAS_BBOX_WIDTH / 2))
-								{
-									coObjects->at(i)->nx = -1;
-								}
-								else if (this->x < coObjects->at(i)->GetX() + (KOOPAS_BBOX_WIDTH / 2))
-								{
-									coObjects->at(i)->nx = 1;
-								}
-								//if(coObjects->at(i)->GetState()==KOOPAS_sT)
-								coObjects->at(i)->SetState(KOOPAS_STATE_UP_ATTACK);
-								coObjects->at(i)->SubHealth(1);
-
-								//DebugOut(L"Line 404 set state attack");
-								vy -= MARIO_JUMP_DEFLECT_SPEED;
-								//SweptAABBEx(coObjects->at(i));
-								break;
-							}
-							if (coObjects->at(i)->GetState() == KOOPAS_STATE_ATTACK)
-							{
-								//DebugOut(L"line 844 attack\n");
-								vy -= 0.35f;
-								coObjects->at(i)->SetState(KOOPAS_STATE_DEFEND);
-								coObjects->at(i)->PlusHealth(1);
-								break;
-							}
-							if (coObjects->at(i)->GetState() == KOOPAS_STATE_UP_ATTACK)
-							{
-								vy -= MARIO_DIE_DEFLECT_SPEED;
-								coObjects->at(i)->SetState(KOOPAS_STATE_UP);
-								coObjects->at(i)->PlusHealth(1);
-								break;
-							}
-						}
-						else if (isCollisionWithObj(coObjects->at(i))->ny > 0)
-						{
-							if (this->vy < 0) {
-								if (coObjects->at(i)->GetState() == KOOPAS_STATE_WALKING)
-								{
-									SetState(MARIO_STATE_DIE);
-								}
-							}
-						}
-					}
-					break;
-				}
-				case GType::GOOMBA:
-				{
-					if (isCollisionWithObj(coObjects->at(i))->ny != 0)
-					{
-						if (coObjects->at(i)->GetState() == GOOMBA_STATE_WALKING)
-						{
-							Point += 200;
-							coObjects->at(i)->SubHealth(1);
-							vy -= MARIO_DIE_DEFLECT_SPEED;
-							//e->obj->IsDie = true;
-						}
-						//if (isCollisionWithObj(coObjects->at(i))->ny < 0)
-						//{
-						//	//DebugOut(L"ny:%f\n", isCollisionWithObj(coObjects->at(i))->ny);
-						//	
-						//}
-						//else {
-						//	//DebugOut(L"Line 878 mario\n");
-						//	SetState(MARIO_STATE_DIE);
-						//}
-						break;
-					}
-					if (isCollisionWithObj(coObjects->at(i))->nx != 0 && coObjects->at(i)->GetHealth() == 2)
-					{
-						//DebugOut(L"health:%f\n", coObjects->at(i)->GetHealth());
-						if (level == 4 && IsAttacking)
-						{
-							coObjects->at(i)->SubHealth(1);
-							Point += 200;
-						}
-						else
-						{
-							//DebugOut(L"LINE 873 MARIO\n");
-							if (coObjects->at(i)->GetHealth() == 2) {
 								SetState(MARIO_STATE_DIE);
+								break;
 							}
-						}
-						break;
-					}
-					break;
-				}
-				case GType::ITEM:
-				{
-					if (coObjects->at(i)->GetState() == GOOMBA_STATE_WALKING)
-
-					{
-						if (level == 1) {
-							y -= MARIOTAIL_BBOX_TAIL;
-							SetLevel(2);
-
-						}
-						coObjects->at(i)->SubHealth(1);
-					}
-					break;
-
-				}
-				case GType::FIREGREENPLANT:
-				{
-					if (isCollisionWithObj(coObjects->at(i))->nx != 0)
-					{
-						if (level == MARIO_LEVEL_TAIL)
-						{
-							coObjects->at(i)->SubHealth(1);
-							break;
-						}
-						else {
-							SetState(MARIO_STATE_DIE);
-						}
-						break;
-					}
-					if (isCollisionWithObj(coObjects->at(i))->ny != 0)
-					{
-						SetState(MARIO_STATE_DIE);
-						break;
-					}
-					break;
-				}
-				case GType::GREENPLANT:
-				{
-					if (isCollisionWithObj(coObjects->at(i))->nx != 0)
-					{
-						SetState(MARIO_STATE_DIE);
-					}
-					if (isCollisionWithObj(coObjects->at(i))->ny != 0)
-					{
-						SetState(MARIO_STATE_DIE);
-					}
-					break;
-				}
-				case GType::FIREPIRAHAPLANT:
-				{
-					if (isCollisionWithObj(coObjects->at(i))->nx != 0)
-					{
-						SetState(MARIO_STATE_DIE);
-					}
-					if (isCollisionWithObj(coObjects->at(i))->ny != 0)
-					{
-						SetState(MARIO_STATE_DIE);
-					}
-					break;
-				}
-				case GType::FLYKOOPAS:
-				{
-					if (isCollisionWithObj(coObjects->at(i))->ny != 0)
-					{
-						if (isCollisionWithObj(coObjects->at(i))->ny < 0)
-						{
-							//DebugOut(L"ny:%f\n", isCollisionWithObj(coObjects->at(i))->ny);
-							if (coObjects->at(i)->GetState() == FLYKOOPAS_STATE_FLY)
+							if (coObjects->at(i)->GetState() == KOOPAS_STATE_DEFEND && IsHolding == false)
 							{
-								//DebugOut(L"line 893 MARIO\n");
+
+								//koo->IsHeld = false;
+								IsKicking = true;
+								coObjects->at(i)->nx = this->nx;
 								coObjects->at(i)->SubHealth(1);
-								vy -= MARIO_DIE_DEFLECT_SPEED;
-								coObjects->at(i)->SetState(FLYKOOPAS_STATE_DISAPPEAR);
-								//e->obj->IsDie = true;
+								coObjects->at(i)->SetState(KOOPAS_STATE_ATTACK);
 							}
-						}
-						if (isCollisionWithObj(coObjects->at(i))->ny > 0)
-						{
-							this->SetState(MARIO_STATE_DIE);
-						}
-					}
-					if (isCollisionWithObj(coObjects->at(i))->nx != 0 && isCollisionWithObj(coObjects->at(i))->ny == 0)
-					{
-						SetState(MARIO_STATE_DIE);
-					}
-					break;
-				}
-				case GType::BROWNCOIN:
-				{
-					//coObjects->at(i) = NULL;
-					Coin += 1;
-					Point += 50;
-					coObjects->at(i)->SubHealth(1);
-					break;
-				}
-				case GType::SHINNINGBRICK:
-				{
-					if (coObjects->at(i)->GetState() == BRICK_STATE_NORMAL)
-					{
-
-						if (isCollisionWithObj(coObjects->at(i))->nx != 0)
-						{
-							if (level == MARIO_LEVEL_TAIL && IsAttacking)
+							if (IsHolding && coObjects->at(i)->GetState() == KOOPAS_STATE_DEFEND)
 							{
-								if (coObjects->at(i)->GetState() == BRICK_STATE_NORMAL)
-								{
-									//DebugOut(L"line 926 mario\n");
-									coObjects->at(i)->SubHealth(1);
-									coObjects->at(i)->SetState(SBRICK_STATE_NOTHINGLEFT);
-									break;
-									//coObjects->at(i)->SubHealth(1);
-								}
-
+								//state = MARIO_STATE_HOLDTURTLE;
+								dynamic_cast<CKoopas*>(coObjects->at(i))->IsHeld = true;
+								koo = dynamic_cast<CKoopas*>(coObjects->at(i));
 							}
-							else
-							{
-								vx = this->nx*0.01f;
-								if (!IsWalking) {
-									if (!IsSitting) {
-										//DebugOut(L"line 277 IDLE\n");
-										state = MARIO_STATE_IDLE;
-									}
-									else
-									{
-										state = MARIO_STATE_SIT;
-									}
-								}
-								if (!IsFlying) {
-									IsOnGround = true;
 
-								}
+
+							if (coObjects->at(i)->GetState() == KOOPAS_STATE_UP && IsHolding == false)
+							{
+								IsKicking = true;
+								coObjects->at(i)->nx = this->nx;
+								coObjects->at(i)->SubHealth(1);
+								coObjects->at(i)->SetState(KOOPAS_STATE_UP_ATTACK);
+							}
+							if (IsHolding && coObjects->at(i)->GetState() == KOOPAS_STATE_UP)
+							{
+
+								//state = MARIO_STATE_HOLDTURTLE;
+								dynamic_cast<CKoopas*>(coObjects->at(i))->IsHeld = true;
+								koo = dynamic_cast<CKoopas*>(coObjects->at(i));
 							}
 							break;
 						}
 						if (isCollisionWithObj(coObjects->at(i))->ny != 0)
 						{
-							if (isCollisionWithObj(coObjects->at(i))->ny < 0) {
-								//y += isCollisionWithObj(coObjects->at(i))->ny * 0.4f;
-								IsOnGround = true;
-								if (IsFalling) {
-									IsFalling = false;
-									if (vx != 0) {
-										state = MARIO_STATE_WALKING;
+							if (isCollisionWithObj(coObjects->at(i))->ny < 0)
+							{
+								//DebugOut(L"line 407");
+								if (coObjects->at(i)->GetState() == KOOPAS_STATE_WALKING)
+								{
+									//DebugOut(L"Line 411 set state walking");
+									vy -= MARIO_DIE_DEFLECT_SPEED / 2;
+									coObjects->at(i)->SubHealth(1);
+									coObjects->at(i)->SetState(KOOPAS_STATE_DEFEND);
+									break;
+								}
+								if (coObjects->at(i)->GetState() == KOOPAS_STATE_DEFEND) {
+									//DebugOut(L"line 810\n");
+									if (this->x >= (coObjects->at(i)->GetX() + (KOOPAS_BBOX_WIDTH / 2)))
+									{
+										coObjects->at(i)->nx = -1;
 									}
-									else
-										if (!IsSitting) {
-											//DebugOut(L"line 348 IDLE\n");
-											state = MARIO_STATE_IDLE;
-										}
+									else if (this->x < (coObjects->at(i)->GetX() + (KOOPAS_BBOX_WIDTH / 2)))
+									{
+										coObjects->at(i)->nx = 1;
+									}
+									coObjects->at(i)->SetState(KOOPAS_STATE_ATTACK);
+									coObjects->at(i)->SubHealth(1);
+									break;
 								}
-								if (IsFallSlow)
-								{
-									IsFallSlow = false;
-									vx = nx * MARIO_WALKING_SPEED;
-									state = MARIO_STATE_WALKING;
+								if (coObjects->at(i)->GetState() == KOOPAS_STATE_UP) {
+									if (this->x >= coObjects->at(i)->GetX() + (KOOPAS_BBOX_WIDTH / 2))
+									{
+										coObjects->at(i)->nx = -1;
+									}
+									else if (this->x < coObjects->at(i)->GetX() + (KOOPAS_BBOX_WIDTH / 2))
+									{
+										coObjects->at(i)->nx = 1;
+									}
+									//if(coObjects->at(i)->GetState()==KOOPAS_sT)
+									coObjects->at(i)->SetState(KOOPAS_STATE_UP_ATTACK);
+									coObjects->at(i)->SubHealth(1);
+
+									//DebugOut(L"Line 404 set state attack");
+									vy -= MARIO_JUMP_DEFLECT_SPEED;
+									//SweptAABBEx(coObjects->at(i));
+									break;
 								}
-								if (IsFlyup)
-									IsFlyup = false;
-								IsJumping = false;
-								IsFlying = false;
-								if (IsFallfly)
+								if (coObjects->at(i)->GetState() == KOOPAS_STATE_ATTACK)
 								{
-									IsWalking = true;
-									state = MARIO_STATE_WALKING;
-									vx = nx * MARIO_WALKING_SPEED;
-									IsFallfly = false;
+									//DebugOut(L"line 844 attack\n");
+									vy -= MARIO_JUMP_DEFLECT_SPEED;
+									coObjects->at(i)->SetState(KOOPAS_STATE_DEFEND);
+									coObjects->at(i)->PlusHealth(1);
+									break;
+								}
+								if (coObjects->at(i)->GetState() == KOOPAS_STATE_UP_ATTACK)
+								{
+									vy -= MARIO_DIE_DEFLECT_SPEED;
+									coObjects->at(i)->SetState(KOOPAS_STATE_UP);
+									coObjects->at(i)->PlusHealth(1);
+									break;
 								}
 							}
-							else {
+							else if (isCollisionWithObj(coObjects->at(i))->ny > 0)
+							{
+								if (this->vy < 0) {
+									if (coObjects->at(i)->GetState() == KOOPAS_STATE_WALKING)
+									{
+										SetState(MARIO_STATE_DIE);
+										break;
+									}
+								}
+							}
+						}
+						break;
+					}
+					case GType::GOOMBA:
+					{
+						if (isCollisionWithObj(coObjects->at(i))->ny != 0)
+						{
+							if (coObjects->at(i)->GetState() == GOOMBA_STATE_WALKING)
+							{
+								Point += 200;
 								coObjects->at(i)->SubHealth(1);
-								coObjects->at(i)->SetState(SBRICK_STATE_NOTHINGLEFT);
+								vy -= MARIO_JUMP_DEFLECT_SPEED;
+								//e->obj->IsDie = true;
+							}
+						}
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0 && coObjects->at(i)->GetHealth() == 2)
+						{
+							//DebugOut(L"health:%f\n", coObjects->at(i)->GetHealth());
+							if (level == 4 && IsAttacking)
+							{
+							}
+							else
+							{
+								if (coObjects->at(i)->GetHealth() == 2) {
+									SetState(MARIO_STATE_DIE);
+								}
+							}
+							break;
+						}
+						break;
+					}
+					case GType::ITEM:
+					{
+						if (coObjects->at(i)->GetState() == GOOMBA_STATE_WALKING)
+
+						{
+							if (level == 1) {
+								y -= MARIOTAIL_BBOX_TAIL;
+								SetLevel(2);
+
+							}
+							coObjects->at(i)->SubHealth(1);
+						}
+						break;
+
+					}
+					case GType::FIREGREENPLANT:
+					{
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0)
+						{
+								SetState(MARIO_STATE_DIE);
+							break;
+						}
+						if (isCollisionWithObj(coObjects->at(i))->ny != 0)
+						{
+							SetState(MARIO_STATE_DIE);
+							break;
+						}
+						break;
+					}
+					case GType::GREENPLANT:
+					{
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0)
+						{
+							SetState(MARIO_STATE_DIE);
+						}
+						if (isCollisionWithObj(coObjects->at(i))->ny != 0)
+						{
+							SetState(MARIO_STATE_DIE);
+						}
+						break;
+					}
+					case GType::FIREPIRAHAPLANT:
+					{
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0)
+						{
+							SetState(MARIO_STATE_DIE);
+						}
+						if (isCollisionWithObj(coObjects->at(i))->ny != 0)
+						{
+							SetState(MARIO_STATE_DIE);
+						}
+						break;
+					}
+					case GType::FLYKOOPAS:
+					{
+						if (isCollisionWithObj(coObjects->at(i))->ny != 0)
+						{
+							if (isCollisionWithObj(coObjects->at(i))->ny < 0)
+							{
+								//DebugOut(L"ny:%f\n", isCollisionWithObj(coObjects->at(i))->ny);
+								if (coObjects->at(i)->GetState() == FLYKOOPAS_STATE_FLY)
+								{
+									//DebugOut(L"line 893 MARIO\n");
+									coObjects->at(i)->SubHealth(1);
+									vy -= MARIO_DIE_DEFLECT_SPEED;
+									coObjects->at(i)->SetState(FLYKOOPAS_STATE_DISAPPEAR);
+									//e->obj->IsDie = true;
+								}
+							}
+							if (isCollisionWithObj(coObjects->at(i))->ny > 0)
+							{
+								this->SetState(MARIO_STATE_DIE);
+							}
+						}
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0 && isCollisionWithObj(coObjects->at(i))->ny == 0)
+						{
+							SetState(MARIO_STATE_DIE);
+						}
+						break;
+					}
+					case GType::BROWNCOIN:
+					{
+						//coObjects->at(i) = NULL;
+						Coin += 1;
+						Point += 50;
+						coObjects->at(i)->SubHealth(1);
+						break;
+					}
+					case GType::SHINNINGBRICK:
+					{
+						if (coObjects->at(i)->GetState() == BRICK_STATE_NORMAL)
+						{
+
+							if (isCollisionWithObj(coObjects->at(i))->nx != 0)
+							{					
+									vx = this->nx*0.01f;
+									if (!IsWalking) {
+										if (!IsSitting) {
+											//DebugOut(L"line 277 IDLE\n");
+											state = MARIO_STATE_IDLE;
+										}
+										else
+										{
+											state = MARIO_STATE_SIT;
+										}
+									}
+									if (!IsFlying) {
+										IsOnGround = true;
+
+									}								
+								break;
+							}
+							if (isCollisionWithObj(coObjects->at(i))->ny != 0)
+							{
+								if (isCollisionWithObj(coObjects->at(i))->ny < 0) {
+									//y += isCollisionWithObj(coObjects->at(i))->ny * 0.4f;
+									IsOnGround = true;
+									if (IsFalling) {
+										IsFalling = false;
+										if (vx != 0) {
+											state = MARIO_STATE_WALKING;
+										}
+										else
+											if (!IsSitting) {
+												//DebugOut(L"line 348 IDLE\n");
+												state = MARIO_STATE_IDLE;
+											}
+									}
+									if (IsFallSlow)
+									{
+										IsFallSlow = false;
+										vx = nx * MARIO_WALKING_SPEED;
+										state = MARIO_STATE_WALKING;
+									}
+									if (IsFlyup)
+										IsFlyup = false;
+									IsJumping = false;
+									IsFlying = false;
+									if (IsFallfly)
+									{
+										IsWalking = true;
+										state = MARIO_STATE_WALKING;
+										vx = nx * MARIO_WALKING_SPEED;
+										IsFallfly = false;
+									}
+								}
+								else {
+									coObjects->at(i)->SubHealth(1);
+									coObjects->at(i)->SetState(SBRICK_STATE_NOTHINGLEFT);
+									break;
+								}
 								break;
 							}
 							break;
 						}
+						if (coObjects->at(i)->GetState() == SBRICK_STATE_TURN_COIN)
+						{
+							coObjects->at(i)->SetHealth(0);
+							this->Coin += 1;
+							this->Point += 100;
+							//x += dx;
+							//y += dy;
+						}
 						break;
 					}
-					if (coObjects->at(i)->GetState() == SBRICK_STATE_TURN_COIN)
+					case GType::BROWNLEAF:
 					{
-						coObjects->at(i)->SetHealth(0);
-						this->Coin += 1;
-						this->Point += 100;
-						//x += dx;
-						//y += dy;
-					}
-					break;
-				}
-				case GType::BROWNLEAF:
-				{
-					if (isCollisionWithObj(coObjects->at(i))->nx != 0 || isCollisionWithObj(coObjects->at(i))->ny != 0)
-					{
-						CLeaf *item = dynamic_cast<CLeaf *>(coObjects->at(i));
-						if (item->GetHealth() == 1)
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0 || isCollisionWithObj(coObjects->at(i))->ny != 0)
 						{
-							if (this->level == MARIO_LEVEL_SMALL) {
-								y -= MARIOTAIL_BBOX_TAIL;
-								this->SetLevel(2);
-							}
-							if (this->level != MARIO_LEVEL_SMALL)
+							CLeaf *item = dynamic_cast<CLeaf *>(coObjects->at(i));
+							if (item->GetHealth() == 1)
 							{
-								y -= MARIOTAIL_BBOX_TAIL;
-								this->SetLevel(this->level + 1);
+								if (this->level == MARIO_LEVEL_SMALL) {
+									y -= MARIOTAIL_BBOX_TAIL;
+									this->SetLevel(2);
+								}
+								if (this->level != MARIO_LEVEL_SMALL)
+								{
+									y -= MARIOTAIL_BBOX_TAIL;
+									this->SetLevel(this->level + 1);
+								}
+								item->SubHealth(1);
 							}
-							item->SubHealth(1);
-						}
 
-						//coObjects->at(i)->SubHealth(1);
+							//coObjects->at(i)->SubHealth(1);
+						}
+						break;
 					}
-					break;
-				}
-				case GType::REDGOOMBA:
-				{
-					if (isCollisionWithObj(coObjects->at(i))->ny != 0)
+					case GType::REDGOOMBA:
 					{
-						if (isCollisionWithObj(coObjects->at(i))->ny < 0)
+						if (isCollisionWithObj(coObjects->at(i))->ny != 0)
 						{
-							//DebugOut(L"ny:%f\n", isCollisionWithObj(coObjects->at(i))->ny);
-							if (coObjects->at(i)->GetHealth() == 3)
+							if (isCollisionWithObj(coObjects->at(i))->ny < 0)
 							{
-								coObjects->at(i)->SubHealth(1);
-								vy -= MARIO_DIE_DEFLECT_SPEED;
-								//e->obj->IsDie = true;
+								//DebugOut(L"ny:%f\n", isCollisionWithObj(coObjects->at(i))->ny);
+								if (coObjects->at(i)->GetHealth() == 3)
+								{
+									coObjects->at(i)->SubHealth(1);
+									vy -= MARIO_DIE_DEFLECT_SPEED;
+									//e->obj->IsDie = true;
+								}
+								else if (coObjects->at(i)->GetHealth() == 2)
+								{
+									coObjects->at(i)->SubHealth(1);
+									coObjects->at(i)->SetState(REDGOOMBA_STATE_DIE);
+									vy -= MARIO_DIE_DEFLECT_SPEED;
+									//e->obj->IsDie = true;
+								}
+								break;
 							}
-							else if (coObjects->at(i)->GetHealth() == 2)
-							{
-								coObjects->at(i)->SubHealth(1);
-								coObjects->at(i)->SetState(REDGOOMBA_STATE_DIE);
-								vy -= MARIO_DIE_DEFLECT_SPEED;
-								//e->obj->IsDie = true;
+
+							else {
+								if (coObjects->at(i)->GetState() != REDGOOMBA_STATE_DIE_UP)
+									SetState(MARIO_STATE_DIE);
 							}
 							break;
 						}
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0 && coObjects->at(i)->GetHealth() > 1)
+						{
+							//DebugOut(L"health:%f\n", coObjects->at(i)->GetHealth());
+							if (level == 4 && IsAttacking)
+							{
+								/*if (this->nx > 0)
+									x -= 10;*/
+								coObjects->at(i)->SetState(REDGOOMBA_STATE_DIE_UP);
+								coObjects->at(i)->SetHealth(1);
+								this->vy = -0.01f;
+							}
+							else
+							{
 
-						else {
-							if (coObjects->at(i)->GetState() != REDGOOMBA_STATE_DIE_UP)
-								SetState(MARIO_STATE_DIE);
+								if (coObjects->at(i)->GetHealth() > 1) {
+									SetState(MARIO_STATE_DIE);
+								}
+							}
+							break;
 						}
 						break;
 					}
-					if (isCollisionWithObj(coObjects->at(i))->nx != 0 && coObjects->at(i)->GetHealth() > 1)
+					case GType::ENDGAMEITEM:
 					{
-						//DebugOut(L"health:%f\n", coObjects->at(i)->GetHealth());
-						if (level == 4 && IsAttacking)
+						if (coObjects->at(i)->GetState() == STATE_STAR)
 						{
-							/*if (this->nx > 0)
-								x -= 10;*/
-							coObjects->at(i)->SetState(REDGOOMBA_STATE_DIE_UP);
-							coObjects->at(i)->SetHealth(1);
-							this->vy = -0.01f;
+							IsEndGame = true;
+							coObjects->at(i)->SetState(STATE_STAR_UP);
+							break;
 						}
-						else
+						if (coObjects->at(i)->GetState() == STATE_MUSHROOM)
+						{
+							IsEndGame = true;
+							coObjects->at(i)->SetState(STATE_MUSHROOM_UP);
+							break;
+						}
+						if (coObjects->at(i)->GetState() == STATE_PLANT)
+						{
+							IsEndGame = true;
+							coObjects->at(i)->SetState(STATE_PLANT_UP);
+							break;
+						}
+
+						break;
+					}
+					case GType::NODE:
+					{
+						CNode *p = dynamic_cast<CNode *>(coObjects->at(i));
+						/*DebugOut(L"nextscene , pscene ,marioy , nodey:%d %d %f %f\n", this->NextScene,p->GetSceneIDOfNode(), this->y,p->y);*/
+						if (this->vx > 0)
+						{
+							if (this->x > p->x && this->NextScene!=p->GetSceneIDOfNode())
+							{
+								this->IsMoving = false;
+								this->NextScene = p->GetSceneIDOfNode();
+							}
+							else
+							{
+								x += dx;
+							}
+						}
+						else if (this->vx < 0)
+						{
+							if (this->x <= p->x && this->NextScene != p->GetSceneIDOfNode())
+							{
+								this->IsMoving = false;
+								this->NextScene = p->GetSceneIDOfNode();
+							}
+							else
+							{
+								x += dx;
+							}
+						}
+						if (this->vy > 0 )
 						{
 
-							if (coObjects->at(i)->GetHealth() > 1) {
-								SetState(MARIO_STATE_DIE);
+							if (this->y > p->y && this->NextScene != p->GetSceneIDOfNode() )
+							{
+								//DebugOut(L"Ismoving=false\n");
+								this->IsMoving = false;
+								this->NextScene = p->GetSceneIDOfNode();
+								this->vy = 0;
+								//DebugOut(L"vy:%d\n",this->vy);
+							}
+							else
+							{
+								//DebugOut(L"Ismoving=true\n");
+								y += dy;
+							}
+						}
+						else if (this->vy < 0 )
+						{
+							if ((this->y <= p->y && this->NextScene != p->GetSceneIDOfNode()) || (this->y <= p->y && p->GetSceneIDOfNode()==3))
+							{
+								this->IsMoving = false;
+								this->NextScene = p->GetSceneIDOfNode();
+							}
+							else
+							{
+								y += dy;
+							}
+						}
+
+						//this->IsMoving = false;
+					
+						up = p->IsUp();
+						down = p->IsDown();
+						right = p->IsRight();
+						left = p->IsLeft();
+						break;
+					}
+					case GType::FLYUPDOWNKOOPAS:
+					{
+						
+						if (isCollisionWithObj(coObjects->at(i))->ny != 0)
+						{
+							if (isCollisionWithObj(coObjects->at(i))->ny < 0)
+							{
+								if (coObjects->at(i)->GetState() == FLY_STATE)
+								{
+									vy -= 0.7f;
+									coObjects->at(i)->SetState(DISAPPEAR_STATE);
+								}
+							}
+							if (isCollisionWithObj(coObjects->at(i))->ny > 0)
+							{
+								this->SetState(MARIO_STATE_DIE);
+							}
+						}
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0 && isCollisionWithObj(coObjects->at(i))->ny == 0)
+						{
+							SetState(MARIO_STATE_DIE);
+						}
+						break;
+					}
+					case GType::QUESTIONBRICK:
+					{
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0)
+						{
+							x -= nx * 0.04f;
+						}
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0)
+						{
+							if(this->level==4&&IsAttacking)
+							{	
+								CQuestionBrick *QBrick = dynamic_cast<CQuestionBrick *>(coObjects->at(i));
+								if (QBrick->GetState() != BRICK_STATE_NOTHINGLEFT) {
+
+									if (QBrick->bricktype == QUESTIONBRICK_TYPE_COIN)
+									{
+										QBrick->HiddenItem = TYPE_COIN;
+									}
+									else if (QBrick->bricktype == QUESTIONBRICK_TYPE_MOVING)
+									{
+										if (this->level == MARIO_LEVEL_SMALL)
+										{
+											QBrick->HiddenItem = TYPE_MUSHROOM;
+										}
+										else
+										{
+											QBrick->HiddenItem = TYPE_LEAF;
+										}
+									}
+									QBrick->SetState(BRICK_STATE_COLISSION);
+							}
+						}
+						}
+						break;
+					}
+					case GType::BOOMERANG:
+					{
+						this->SetState(MARIO_STATE_DIE);
+						break;
+					}
+					case GType::SONGBRICK:
+					{
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0) {
+							if (isCollisionWithObj(coObjects->at(i))->nx > 0)
+							{
+
+							}
+							if (isCollisionWithObj(coObjects->at(i))->nx < 0)
+							{
+								//DebugOut(L"songbrick nx <0");
+							}
+						}
+						if (isCollisionWithObj(coObjects->at(i))->ny != 0) {
+							if (isCollisionWithObj(coObjects->at(i))->ny > 0)//nhay tu duoi len
+							{							
+								if (coObjects->at(i)->GetState() == SONGBRICK_STATE_NORMAL)
+								{
+									coObjects->at(i)->SetState(SONGBRICK_STATE_HITUP);
+								}
+								if (vy < 0) {
+									vy = 0;
+									vy += GRAVITY_INCREASE;
+								}
+								if (IsJumping) {
+									IsJumping = false;
+									IsFalling = true;
+									state = MARIO_STATE_FALLING;
+								}
+								break;
+							}
+							if (isCollisionWithObj(coObjects->at(i))->ny < 0)
+							{
+								y += isCollisionWithObj(coObjects->at(i))->ny* ZEROPOINTFOUR;
+								//vy = 0;
+								//IsOnSongbrick = true;
+								if (coObjects->at(i)->GetState() == SONGBRICK_STATE_NORMAL)
+								{
+									coObjects->at(i)->SetState(SONGBRICK_STATE_JUMPEDON);
+								}
+								if (coObjects->at(i)->vy>0)
+								{
+									IsOnGround = true;
+									IsFalling = false;
+									IsJumping = false;
+									//vy = coObjects->at(i)->vy;
+									//IsOnSongbrick = false;
+								}
+								if (coObjects->at(i)->vy < 0)
+								{
+
+									vy -= SONGBRICK_HITUP_SPEED;
+									IsJumping = true;
+									IsOnGround = false;
+								}
+								break;
 							}
 						}
 						break;
 					}
-					break;
-				}
-				case GType::ENDGAMEITEM:
-				{
-					if (coObjects->at(i)->GetState() == STATE_STAR)
+					case GType::EXTRASONGBRICK:
 					{
-						IsEndGame = true;
-						coObjects->at(i)->SetState(STATE_STAR_UP);
-						break;
-					}
-					if (coObjects->at(i)->GetState() == STATE_MUSHROOM)
-					{
-						IsEndGame = true;
-						coObjects->at(i)->SetState(STATE_MUSHROOM_UP);
-						break;
-					}
-					if (coObjects->at(i)->GetState() == STATE_PLANT)
-					{
-						IsEndGame = true;
-						coObjects->at(i)->SetState(STATE_PLANT_UP);
-						break;
-					}
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0) {
+							if (nx > 0 && vy==0)
+							{
+								vx -= MARIO_WALKING_SPEED;
+								coObjects->at(i)->nx = 1;
+								coObjects->at(i)->SetState(EXSONGBRICK_STATE_CHANGE);
+							}
+							if (nx < 0 && vy == 0)
+							{
+								vx += MARIO_WALKING_SPEED;
+								coObjects->at(i)->nx = -1;
+								coObjects->at(i)->SetState(EXSONGBRICK_STATE_CHANGE);
+							}
+							break;
+						}
+						if (isCollisionWithObj(coObjects->at(i))->ny != 0) {
+							vy = 0;
+							if (isCollisionWithObj(coObjects->at(i))->ny > 0)//nhay tu duoi len
+							{
+								if (coObjects->at(i)->GetState() == SONGBRICK_STATE_NORMAL)
+								{
+									coObjects->at(i)->SetState(SONGBRICK_STATE_HITUP);
+								}
+								if (vy < 0) {
+									vy = 0;
+									vy += GRAVITY_INCREASE;
+								}
+								if (IsJumping) {
+									IsJumping = false;
+									IsFalling = true;
+									state = MARIO_STATE_FALLING;
+								}
+								break;
+							}
+							if (isCollisionWithObj(coObjects->at(i))->ny < 0) {
+								vy = 0;
+								IsOnSongbrick = true;
+								y += -0.4f;
+								if (coObjects->at(i)->GetState() == EXSONGBRICK_STATE_NORMAL)
+								{
+									coObjects->at(i)->SetState(EXSONGBRICK_STATE_JUMPON);
+								}
+								if (coObjects->at(i)->vy > 0)
+								{
+									IsOnGround = true;
+									IsFalling = false;
+									IsJumping = false;
+									//vy = coObjects->at(i)->vy;
+									//IsOnSongbrick = false;
+								}
+								if (coObjects->at(i)->vy < 0)
+								{
 
-					break;
-				}
-				case GType::NODE:
-				{
-					CNode *p = dynamic_cast<CNode *>(coObjects->at(i));
-					if (this->vx > 0)
-					{
-						if (this->x > p->x)
-						{
-							this->IsMoving = false;
+									vy -= SONGBRICK_HITUP_SPEED;
+									IsJumping = true;
+									IsOnGround = false;
+									IsOnSongbrick = false;
+								}
+							}
 						}
-						else
-						{
-							x += dx;
-						}
+						break;
 					}
-					if (this->vx < 0)
-					{
-						if (this->x <= p->x)
+					case GType::COUNTERBRICK: {
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0)
 						{
-							this->IsMoving = false;
-						}
-						else
-						{
-							x += dx;
-						}
-					}
-					if (this->vy > 0)
-					{
-						if (this->y > p->y)
-						{
-							this->IsMoving = false;
-						}
-						else
-						{
-							y += dy;
-						}
-					}
-					if (this->vy < 0)
-					{
-						if (this->y <= p->y)
-						{
-							this->IsMoving = false;
-						}
-						else
-						{
-							y += dy;
-						}
-					}
 
-					//this->IsMoving = false;
-					this->NextScene = p->GetSceneIDOfNode();
-					up = p->IsUp();
-					down = p->IsDown();
-					right = p->IsRight();
-					left = p->IsLeft();
-					break;
-				}
-				case GType::FLYUPDOWNKOOPAS:
-				{
-					if (isCollisionWithObj(coObjects->at(i))->ny != 0)
+							if (nx>0)
+							{
+								vx -= COUNTERBRICK_DEFLECT_SPEED;
+								coObjects->at(i)->nx = 1;
+								coObjects->at(i)->SetState(COUNTERBRICK_STATE_CHANGE);
+							}
+							if (nx < 0)
+							{
+								vx += COUNTERBRICK_DEFLECT_SPEED;
+								coObjects->at(i)->nx = -1;
+								coObjects->at(i)->SetState(COUNTERBRICK_STATE_CHANGE);
+							}
+
+							break;
+						}
+						break;
+					}
+					case GType::TURTLE:
 					{
-						if (isCollisionWithObj(coObjects->at(i))->ny < 0)
+						if (isCollisionWithObj(coObjects->at(i))->nx != 0 && vy==0)
+						{
+							SetState(MARIO_STATE_DIE);
+							break;
+						}
+						if (isCollisionWithObj(coObjects->at(i))->ny != 0)
 						{
 							//DebugOut(L"ny:%f\n", isCollisionWithObj(coObjects->at(i))->ny);
-							if (coObjects->at(i)->GetState() == FLY_STATE)
+							if (isCollisionWithObj(coObjects->at(i))->ny > 0 && vy<0)
 							{
-								vy -= 0.7f;
-								coObjects->at(i)->SetState(DISAPPEAR_STATE);
-								//e->obj->IsDie = true;
+								//tu duoi len
+								SetState(MARIO_STATE_DIE);
+								break;
+							}
+							if (isCollisionWithObj(coObjects->at(i))->ny < 0) {
+								//tu tren xuong
+								vy -= MARIO_DIE_DEFLECT_SPEED/2;
+								coObjects->at(i)->SetState(TURTLE_STATE_DIE);
+								break;
 							}
 						}
-						if (isCollisionWithObj(coObjects->at(i))->ny > 0)
-						{
-							this->SetState(MARIO_STATE_DIE);
-						}
+						break;
 					}
-					if (isCollisionWithObj(coObjects->at(i))->nx != 0 && isCollisionWithObj(coObjects->at(i))->ny == 0)
-					{
-						SetState(MARIO_STATE_DIE);
-					}
-					break;
-				}
-				case GType::QUESTIONBRICK:
-				{
-					if (isCollisionWithObj(coObjects->at(i))->nx != 0)
-					{
-						if(this->level==4&&IsAttacking)
-						{CQuestionBrick *QBrick = dynamic_cast<CQuestionBrick *>(coObjects->at(i));
-						if (QBrick->GetState() != BRICK_STATE_NOTHINGLEFT) {
-
-							if (QBrick->bricktype == QUESTIONBRICK_TYPE_COIN)
-							{
-								QBrick->HiddenItem = TYPE_COIN;
-							}
-							else if (QBrick->bricktype == QUESTIONBRICK_TYPE_MOVING)
-							{
-								if (this->level == MARIO_LEVEL_SMALL)
-								{
-									QBrick->HiddenItem = TYPE_MUSHROOM;
-								}
-								else
-								{
-									QBrick->HiddenItem = TYPE_LEAF;
-								}
-							}
-							QBrick->SetState(BRICK_STATE_COLISSION);
-						}
-					}
-					}
-					break;
-				}
-				case GType::BOOMERANG:
-				{
-					this->SetState(MARIO_STATE_DIE);
-					break;
-				}
 				}
 			}
 	}
@@ -1538,11 +1780,11 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		LstWeapon[i]->Update(dt, coObjects);
 	}
 	for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
-	if (y > 680)
+	if (y > 880)
+	{
 		Reset();
-	/*if(state == MARIO_STATE_SIT)
-		DebugOut(L"line 387 state sit\n");*/
-		//DebugOut(L"x y:%f %f\n",NextX,NextY);
+
+	}
 	if (vy < 0)
 	{
 		ny = -1;
@@ -1551,7 +1793,6 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	{
 		ny = 1;
 	}
-	//DebugOut(L"ny:%d\n", ny);
 }
 
 void CMario::Render()
@@ -1964,6 +2205,7 @@ void CMario::Render()
 	for (int i = 0; i < LstWeapon.size(); i++) {
 		LstWeapon[i]->Render();
 	}
+	//tail->Render();
 	animation_set->at(ani)->Render(x, y, 255);
 	RenderBoundingBox();
 }
@@ -2074,11 +2316,18 @@ void CMario::SetState(int state)
 			startfly = GetTickCount64();
 			if ((nx < 0 && vx > -MARIO_RUNNING_MAXSPEED) || (nx > 0 && vx < MARIO_RUNNING_MAXSPEED))
 			{
+				if (IsOnSongbrick)
+				{
+					vy = -MARIO_DIE_DEFLECT_SPEED;
+				}
+				else {
+					vy = -MARIO_JUMP_SPEED_Y;
+
+				}
 				//jump
 				//DebugOut(L"line 742 Mario : Jump press\n");
 				IsJumping = true;
 				IsOnGround = false;
-				vy = -MARIO_JUMP_SPEED_Y;
 			}
 			else {
 				//fly
@@ -2250,7 +2499,7 @@ CMario * CMario::GetInstance()
 void CMario::GetBoundingBox(float &left, float &top, float &right, float &bottom)
 {
 	left = x;
-	//top = y;
+	top = y;
 	if (!IsInMap3 && !IsInMap4)
 	{
 		if (level == MARIO_LEVEL_BIG || level == MARIO_LEVEL_FIRE)
@@ -2271,29 +2520,13 @@ void CMario::GetBoundingBox(float &left, float &top, float &right, float &bottom
 			right = x + MARIO_SMALL_BBOX_WIDTH;
 			bottom = y + MARIO_SMALL_BBOX_HEIGHT;
 		}
-		if (level == MARIO_LEVEL_TAIL && IsAttacking)
+		if (level == MARIO_LEVEL_TAIL)
 		{
 			if (nx == 1)
 			{
-				left = x + 10;
-				right = left + MARIO_TAIL_BBOX_WIDTH_ATTACK;
-			}
-			else if(nx==-1)
-			{
-				left = x - 10;
-				right = left + MARIO_TAIL_BBOX_WIDTH_ATTACK;
-			}
-			//left = x + 15;
-			top = y+16;
-			bottom = top + 12;
-		}
-		else if (level == 4 && !IsAttacking)
-		{
-			if (nx == 1)
-			{
-				left = x + 10;
+				left = x;
 				top = y;
-				right = left + MARIO_TAIL_BBOX_WIDTH;
+				right = left + MARIO_TAIL_BBOX_WIDTH+ MARIO_START_SCENE_BBOX_HEIGHT;
 				bottom = y + MARIO_BIG_BBOX_HEIGHT;
 			}
 			if (nx == -1)
@@ -2305,7 +2538,7 @@ void CMario::GetBoundingBox(float &left, float &top, float &right, float &bottom
 			}
 			if (state == MARIO_STATE_SIT)
 			{
-				right = x + 10;
+				right = x + NUMBER_10;
 				bottom = y + MARIO_SMALL_BBOX_HEIGHT + 2;
 			}
 		}

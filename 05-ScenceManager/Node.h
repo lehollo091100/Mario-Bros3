@@ -22,6 +22,7 @@ public:
 		this->down = down;
 		this->scene_id = scene_id;
 		SetHealth(1);
+		IsMovingObj = false;
 
 	};
 	int GetSceneIDOfNode()

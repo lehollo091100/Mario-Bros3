@@ -18,6 +18,7 @@ CShinningBrick::CShinningBrick()
 	vy2 = -0.3f;
 	vy3 = -0.25f;
 	vy4 = -0.25f;
+	IsMovingObj = false;
 
 }
 void CShinningBrick::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)

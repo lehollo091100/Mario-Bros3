@@ -131,7 +131,10 @@
     <ClCompile Include="BrownCoin.cpp" />
     <ClCompile Include="CoinInBrick.cpp" />
     <ClCompile Include="ColorBrick.cpp" />
+    <ClCompile Include="CounterBrick.cpp" />
+    <ClCompile Include="CSongBrick.cpp" />
     <ClCompile Include="EndGameObject.cpp" />
+    <ClCompile Include="Extrasongbrick.cpp" />
     <ClCompile Include="Fire.cpp" />
     <ClCompile Include="FireBullet.cpp" />
     <ClCompile Include="FireGreenPlant.cpp" />
@@ -158,6 +161,7 @@
     <ClCompile Include="ShinningBrick.cpp" />
     <ClCompile Include="ShinningExtraBrick.cpp" />
     <ClCompile Include="StackSpeed.cpp" />
+    <ClCompile Include="Tail.cpp" />
     <ClCompile Include="Turtle.cpp" />
     <ClCompile Include="UpDownWood.cpp" />
     <ClCompile Include="Utils.cpp" />
@@ -180,7 +184,10 @@
     <ClInclude Include="BrownCoin.h" />
     <ClInclude Include="CoinInBrick.h" />
     <ClInclude Include="ColorBrick.h" />
+    <ClInclude Include="CounterBrick.h" />
+    <ClInclude Include="CSongBrick.h" />
     <ClInclude Include="EndGameObject.h" />
+    <ClInclude Include="Extrasongbrick.h" />
     <ClInclude Include="Fire.h" />
     <ClInclude Include="FireBullet.h" />
     <ClInclude Include="FireGreenPlant.h" />
@@ -207,6 +214,7 @@
     <ClInclude Include="ShinningBrick.h" />
     <ClInclude Include="ShinningExtraBrick.h" />
     <ClInclude Include="StackSpeed.h" />
+    <ClInclude Include="Tail.h" />
     <ClInclude Include="Turtle.h" />
     <ClInclude Include="UpDownWood.h" />
     <ClInclude Include="Utils.h" />

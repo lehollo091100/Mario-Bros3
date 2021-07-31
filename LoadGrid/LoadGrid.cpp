@@ -13,8 +13,8 @@ int main()
 {
 	int left, top, right, bottom, x, y, type, cellwidth, cellheight;
 	int bboxwidth; int bboxheight;
-	ifstream ifs("inputObjects1.txt", ios::in);
-	ofstream ofs("gridinfo1.txt", ios::out);
+	ifstream ifs("inputObjects7.txt", ios::in);
+	ofstream ofs("gridinfo7.txt", ios::out);
 	string a;
 	bool allowoutput = false;
 	int count = 0;

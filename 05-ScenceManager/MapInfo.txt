@@ -1,4 +1,4 @@
-5
+7
 out.txt
 textures//TileMap.png
 12	11
@@ -9,8 +9,15 @@ WorldMap1.txt
 textures//WorldMap.jpg
 13	20
 StartSceneMap.txt
-textures//StartScene.png
-1	1
-Map4.txt
-textures//1-4_bank.png
-6	11
+textures//StartScene_bank.png
+16	12
+Map3.txt
+textures//SuperMarioBros3Map1-3_bank.png
+14	11
+Map3.txt
+textures//SuperMarioBros3Map1-3_bank.png
+14	11
+HiddenMap3.txt
+textures//HiddenScene3_bank.png
+3	11
+

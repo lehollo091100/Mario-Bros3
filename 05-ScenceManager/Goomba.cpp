@@ -9,15 +9,24 @@ CGoomba::CGoomba()
 	Isdie = false;
 	//IsWalking = true;
 	time = 0;
+	startY = 0;
 }
 
 
 void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
+	if (startY == 0)
+	{
+		startY = y;
+	}
 	if (health == 0)
 		IsDie = true;
 	if (IsDie)
 		return;
+	if (y - startY > 100)
+	{
+		health == 0;
+	}
 	CGameObject::Update(dt, coObjects);
 	vy += 0.015f * dt;
 
@@ -81,7 +90,7 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	CalcPotentialCollisions(coObjects, coEvents);
 
 	// No collision occured, proceed normally
-	if (coEvents.size() == 0)
+	if (coEvents.size() == 0|| state==GOOMBA_STATE_DIE_UP)
 	{
 		x += dx;
 		y += dy;
@@ -97,12 +106,14 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		x += min_tx * dx + nx * 0.4f;
 		y += min_ty * dy + ny * 0.4f;
 		//if (nx != 0) vx = 0;
-		if (ny != 0) vy = 0;
+		
+			if (ny != 0) vy = 0;
+		
 		for (UINT i = 0; i < coEventsResult.size(); i++)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
 			if (e->nx != 0) {
-				if (e->obj->GetType() == GType::BRICK||e->obj->GetType() == GType::PIPE||e->obj->GetType()==GType::QUESTIONBRICK)
+				if (e->obj->GetType() == GType::BRICK || e->obj->GetType() == GType::PIPE || e->obj->GetType() == GType::QUESTIONBRICK)
 				{
 					this->nx = -this->nx;
 					this->vx = this->nx*GOOMBA_WALKING_SPEED;
@@ -111,25 +122,17 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				{
 					x += dx;
 				}
-				/*if (e->obj->GetType()==GType::FLYKOOPAS)
-				{
-					vy = 0;
-				}*/
-				/*else
-				{
-					x += dx;
 
-				}*/
-				
-			}
-			if (e->ny != 0)
-			{
-				if (e->obj->GetType() == GType::ITEM||e->obj->GetType()==GType::FLYKOOPAS)
+
+				if (e->ny != 0)
 				{
-					vy= 0;
+					if (e->obj->GetType() == GType::ITEM || e->obj->GetType() == GType::FLYKOOPAS)
+					{
+						vy = 0;
+					}
 				}
-			}
 
+			}
 		}
 	}
 	for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
@@ -155,16 +158,20 @@ void CGoomba::SetState(int state)
 	CGameObject::SetState(state);
 	switch (state)
 	{
-	case GOOMBA_STATE_DIE:
-		//diestart = GetTickCount64();
-		//DebugOut(L"state goomba die\n");
-		Isdie = true;
-		
-		break;
-	case GOOMBA_STATE_WALKING:
-		IsWalking = true;
-		break;
-		//vx = -GOOMBA_WALKING_SPEED;
+		case GOOMBA_STATE_DIE:
+			Isdie = true;	
+			break;
+		case GOOMBA_STATE_WALKING: {
+
+			IsWalking = true;
+			break;
+		}
+			//vx = -GOOMBA_WALKING_SPEED;
+		case GOOMBA_STATE_DIE_UP: {
+			vy -= 0.05f;
+			vx = 0;
+			break;
+		}
 	}
 }
 void CGoomba::GetBoundingBox(float &left, float &top, float &right, float &bottom)

@@ -7,3 +7,5 @@ start	4
 3	WorldMapscene.txt
 4	StartScene.txt
 5	scene4.txt
+6	scene3.txt
+7	sceneHidden3.txt

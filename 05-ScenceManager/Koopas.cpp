@@ -19,31 +19,34 @@ CKoopas::CKoopas(CMario *m, int range)
 	mario = m;
 	time = 0;
 	IsOnGround = false;
+	IsMovingObj = true;
+	
 }
 
 
 
 void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
-	//DebugOut(L"koopas y:%f\n", y);
-	//DebugOut(L"2:%f\n", vx);
 	if (health <= 0)
 	{
+	DebugOut(L"koopas.cpp");
 		IsDie = true;
 	}
 	if (IsDie || IsHeld)
+	{
+
 		return;
+	}
 	//DebugOut(L"speed:%f\n", vx);
 	float cam_x = CGame::GetInstance()->GetCamX();
 	float cam_w = CGame::GetInstance()->GetScreenWidth();
 	//out cam
-	if (this->y > 430) {
+	if (this->y > 930) {
 		SetHealth(0);
 	}
 	if (IsAttacking || IsUpAttacking) {
 		if (x > cam_x + cam_w + 100 || x < (cam_x - 100) || x < 0)
 			health = 0;
-		//DebugOut(L"OUT CAM LINE 31 KOOPAS\n");
 	}
 
 	if (IsWalking) {
@@ -128,7 +131,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				{
 					if (e->ny != 0)
 					{
-						vy = 0;
+						//vy = 0;
 						y += e->ny * 0.4f;
 						bool mostleft = false, mostright = false;
 						BL = sbrick->x - 16;
@@ -162,6 +165,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						}
 
 					}
+					
 				}
 				/*else {
 					x += dx;
@@ -170,6 +174,18 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			}	
 			if (state == KOOPAS_STATE_WALKING)
 			{
+				if (e->obj->GetType()==GType::SHINNINGBRICK)
+				{
+					if (e->nx != 0)
+					{
+						if (e->nx != 0)
+						{
+							x -= -(this->nx) * 0.04f;
+							this->nx = -this->nx;
+							this->vx = this->nx * KOOPAS_ATTACK_SPEED;
+						}
+					}
+				}
 				if (e->obj->GetType() == GType::COLORBRICK || e->obj->GetType() == GType::GOOMBA)
 				{
 					//x += dx;
@@ -193,6 +209,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					}
 					if (e->ny != 0)
 					{
+						vy=0;
 						//y += e->ny*0.4f;
 						BL = -99999;
 						BR = 99990;

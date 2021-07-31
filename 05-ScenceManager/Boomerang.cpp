@@ -1,27 +1,26 @@
 #include "Boomerang.h"
 #include"Utils.h"
-
 void CBoomerang::SetState(int state)
 {
 	CGameObject::SetState(state);
 	switch (state)
 	{
 	case BOOMERANG_STATE_ATTACK:
-		vx = 0.12f;
-		vy = -0.05f;
+		vx = BOOMERANG_ATTACK_SPEEDX;
+		vy = -BOOMERANG_ATTACK_SPEEDY;
 		break;
 	case BOOMERANG_STATE_DOWN_ATTACK:
 		vx = 0.08f;
-		vy = 0.1f;
+		vy = BOOMERANG_ATTACK_SPEEDX;
 		break;
 	case BOOMERANG_STATE_MOVING_BACK:
 		vy = 0;
-		vx = -0.1;
+		vx = -BOOMERANG_ATTACK_SPEEDX;
 		break;
 	}
 }
 
-void CBoomerang::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CBoomerang::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
 	if (health == 0)
 	{
@@ -29,13 +28,14 @@ void CBoomerang::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 	if (maxX == 0)
 	{
-		maxX = x + 100;
+		maxX = x + 50;
 	}
 	if (maxY == 0)
 	{
-		maxY = y + 10;
+		maxY = y + 5;
 	}
 	CGameObject::Update(dt, coObjects);
+	//DebugOut(L"coobjects:%d", coObjects->size());
 	x += dx;
 	y += dy;
 	if (state != BOOMERANG_STATE_MOVING_BACK)
@@ -44,7 +44,7 @@ void CBoomerang::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 	if (state == BOOMERANG_STATE_ATTACK)
 	{
-		if (x > maxX)
+		if (x >= maxX)
 		{
 			SetState(BOOMERANG_STATE_DOWN_ATTACK);
 		}
@@ -87,17 +87,11 @@ void CBoomerang::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		for (UINT i = 0; i < coEventsResult.size(); i++)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
-			if (e->nx != 0) {
-				if (e->obj->GetType() == GType::TURTLE)
-				{
-					SetHealth(0);
-				}
-				/*else {
-					x += dx;
-					y += dy;
-				}*/
-			}
-
+			//if (e->obj->GetType() == GType::MARIO)
+			//{
+			//	//DebugOut(L"mario\n");
+			//	e->obj->SetState(MARIO_STATE_DIE);
+			//}
 		}
 	}
 	for (UINT i = 0; i < coObjects->size(); i++)
@@ -107,15 +101,19 @@ void CBoomerang::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			{
 				switch (coObjects->at(i)->GetType())
 				{
-				case GType::TURTLE:
-				{
-					if (state==BOOMERANG_STATE_MOVING_BACK)
-					{
-
-						SetHealth(0);
+					case GType::TURTLE: {
+						if (state == BOOMERANG_STATE_MOVING_BACK)
+						{
+							SetHealth(0);
+							break;
+						}
+						break;
 					}
-					break;
-				}
+					case GType::MARIO: {
+						//DebugOut(L"mario\n");
+						coObjects->at(i)->SetState(MARIO_STATE_DIE);
+						break;
+					}
 				}
 			}
 	}
@@ -128,9 +126,9 @@ void CBoomerang::Render()
 	{
 		return;
 	}
-	CAnimationSets * animation_sets = CAnimationSets::GetInstance();
-	LPANIMATION_SET ani_set = animation_sets->Get(21);
-	SetAnimationSet(ani_set);
+	//CAnimationSets * animation_sets = CAnimationSets::GetInstance();
+	//LPANIMATION_SET ani_set = animation_sets->Get(21);
+	//SetAnimationSet(ani_set);
 	animation_set->at(1)->Render(x, y);
 	RenderBoundingBox();
 }

@@ -17,7 +17,7 @@ public:
 	{
 	};
 	~Grid() {}
-	void GetListObj(vector<CGameObject*>& LstObj, int camwidth, int camheight, float camX, float camY);
+	void GetListObj(vector<CGameObject*>& LstObj, vector<CGameObject*>& mLstObj, vector<CGameObject*>& staticLstObj, int camwidth, int camheight, float camX, float camY);
 	void ClearGrid(int camwidth, int camheight, float camX, float camY);
 	void RemoveGrid() {
 		mObjGrid.clear();

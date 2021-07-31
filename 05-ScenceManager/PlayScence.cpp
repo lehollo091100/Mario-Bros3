@@ -136,6 +136,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line,int l,int t,int r,int b )
 	if (tokens.size() < 3) return; // skip invalid lines - an object set must have at least id, x, y
 
 	int object_type = atoi(tokens[0].c_str());
+	//DebugOut(L"object_tye:%d",object_type);
 	float x = atof(tokens[1].c_str());
 	float y = atof(tokens[2].c_str());
 
@@ -180,7 +181,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line,int l,int t,int r,int b )
 		obj = new CBrick(W, H);
 		break;
 	}
-	case GType::KOOPAS: obj = new CKoopas(player); break;
+	case GType::KOOPAS: obj = new CKoopas(player);/* DebugOut(L"koopas\n");*/ break;
 	case GType::KOOPASBROWN: obj = new CKoopasBrown(player); break;
 
 	case GType::FLYKOOPAS: obj = new CFlyKoopas(player); break;
@@ -243,6 +244,21 @@ void CPlayScene::_ParseSection_OBJECTS(string line,int l,int t,int r,int b )
 		obj = new CPBrick();
 		break;
 	}
+	case GType::SONGBRICK:
+	{
+		obj = new CSongBrick(player);
+		break;
+	}
+	case GType::EXTRASONGBRICK: {
+		obj = new Extrasongbrick();
+		break;
+	}
+	case GType::COUNTERBRICK: 
+	{
+		int item= atoi(tokens[6].c_str());
+		obj = new CounterBrick(item);
+		break;
+	}
 	case GType::NODE:
 	{
 		int W, H, up, down, left, right, scene_id;
@@ -282,7 +298,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line,int l,int t,int r,int b )
 	}
 	case GType::TURTLE:
 	{
-		obj = new Turtle();
+		obj = new Turtle(player);
 		break;
 	}
 	case GType::FLYUPDOWNKOOPAS:
@@ -314,6 +330,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line,int l,int t,int r,int b )
 	if (obj != NULL) {
 		grid->push_backGrid(obj, l, t, r, b);
 		//DebugOut(L"debug325:%d %d %d %d %d\n", obj->type, (int)l, (int)t, (int)r, (int)b);
+		
 		//objects.push_back(obj);
 	}
 }
@@ -326,7 +343,7 @@ void CPlayScene::Load()
 		if(player->x<300)
 			cam1 = 0;
 	}
-		filegrid = "C:/Users/Admin/Documents/Mario Bros 3/Mario-Bros3/LoadGrid/gridinfo"+to_string(mapid)+".txt";
+	filegrid = "C:/Users/Admin/Documents/Mario Bros 3/Mario-Bros3/LoadGrid/gridinfo"+to_string(mapid)+".txt";
 	ifstream ifs(filegrid, ios::in);
 	DebugOut(L"[INFO] Start loading scene resources from : %s \n", sceneFilePath);
 	string filepath;
@@ -344,7 +361,6 @@ void CPlayScene::Load()
 	while (f.getline(str, MAX_SCENE_LINE))
 	{
 		string line(str);
-
 		if (line[0] == '#') continue;	// skip comment lines	
 
 		if (line == "[TEXTURES]") { section = SCENE_SECTION_TEXTURES; continue; }
@@ -372,10 +388,10 @@ void CPlayScene::Load()
 		case SCENE_SECTION_ANIMATIONS: _ParseSection_ANIMATIONS(line); break;
 		case SCENE_SECTION_ANIMATION_SETS: _ParseSection_ANIMATION_SETS(line); break;
 		case SCENE_SECTION_OBJECTS: {
-			int l, t, r, b;
-			ifs >>l>> l >> t >> r >> b;
+			int l, t, r, b, type;
+			ifs >>type>> l >> t >> r >> b;
+			/*DebugOut(L"type:%d %d %d %d %d\n",type, l,t,r,b);*/
 			_ParseSection_OBJECTS(line,l,t,r,b); 
-			//DebugOut(L"left,top,right,bottom: %d %d %d %d \n", l, t, r, b);
 			break; 
 		}
 		}
@@ -394,31 +410,31 @@ void CPlayScene::Update(DWORD dt)
 {
 	//DebugOut(L"mapid:%d\n", mapid);
 	if (mapid == 5) {
-		grid->GetListObj(objects, 290, 224, CGame::GetInstance()->GetCamX(), CGame::GetInstance()->GetCamY());
-		//DebugOut(L"size:%d\n", objects.size());
+		grid->GetListObj(objects, mObjects, staticObjects, 290, 224, CGame::GetInstance()->GetCamX(), CGame::GetInstance()->GetCamY());
 		grid->ClearGrid(290, 224, CGame::GetInstance()->GetCamX(), CGame::GetInstance()->GetCamY());
 	}
 	else
 	{
-		grid->GetListObj(objects, 330, 224, player->x - 165, CGame::GetInstance()->GetCamY());
+		grid->GetListObj(objects,mObjects,staticObjects, 330, 224, player->x - 165, CGame::GetInstance()->GetCamY());
 		grid->ClearGrid(330, 224, player->x - 165, CGame::GetInstance()->GetCamY());
-
 	}
+	//DebugOut(L"%d %d %d \n", objects.size(), mObjects.size(), staticObjects.size());
 	// We know that Mario is the first object in the list hence we won't add him into the colliable object list
 	// TO-DO: This is a "dirty" way, need a more organized way 
 	vector<LPGAMEOBJECT> object2;
 	vector<LPGAMEOBJECT> coObjects;
 	object2.clear();
+	coObjects.clear();
 	for (size_t i = 0; i < objects.size(); i++)
 	{
+
 		if (objects[i]->IsDie != true)
+		{
 			object2.push_back(objects[i]);
-	}
-	//DebugOut(L"line 298 playscene:%d", objects.size());
-	for (size_t i = 0; i < objects.size(); i++)
-	{
-		if (objects[i]->IsDie != true) {
-			coObjects.push_back(objects[i]);
+			if (objects[i]->GetType() == GType::TURTLE)
+			{
+			}
+				//DebugOut(L"type:%d\n", objects[i]->type);
 			if (objects[i]->GetType() == GType::QUESTIONBRICK && (objects[i]->GetState() == BRICK_STATE_NOTHINGLEFT))
 			{
 
@@ -428,11 +444,12 @@ void CPlayScene::Update(DWORD dt)
 						objects[i]->HiddenItem = -1;
 						float qx, qy;
 						objects[i]->GetPosition(qx, qy);
-						item->SetPosition(qx, qy - 17);
+						item->SetPosition(qx, qy - BBOX_16);
 						CAnimationSets * animation_sets = CAnimationSets::GetInstance();
 						LPANIMATION_SET ani_set = animation_sets->Get(7);
 						item->SetAnimationSet(ani_set);
-						objects.push_back(item);
+						object2.push_back(item);
+						mObjects.push_back(item);
 					}
 				}
 				if (objects[i]->HiddenItem == TYPE_COIN)
@@ -448,7 +465,8 @@ void CPlayScene::Update(DWORD dt)
 						CAnimationSets * animation_sets = CAnimationSets::GetInstance();
 						LPANIMATION_SET ani_set = animation_sets->Get(12);
 						item->SetAnimationSet(ani_set);
-						objects.push_back(item);
+						object2.push_back(item);
+						mObjects.push_back(item);
 					}
 				}
 				if (objects[i]->HiddenItem == TYPE_LEAF)
@@ -462,10 +480,29 @@ void CPlayScene::Update(DWORD dt)
 						CAnimationSets * animation_sets = CAnimationSets::GetInstance();
 						LPANIMATION_SET ani_set = animation_sets->Get(15);
 						item->SetAnimationSet(ani_set);
-						objects.push_back(item);
+						object2.push_back(item);
+						mObjects.push_back(item);
 					}
 				}
 
+			}
+			if ((objects[i]->GetType() == GType::COUNTERBRICK)&& (objects[i]->GetState()==COUNTERBRICK_STATE_CHANGE) )
+			{
+				if (objects[i]->HiddenItem != -1)
+				{
+					if (objects[i]->HiddenItem == 1)
+					{
+						CLeaf *item = new CLeaf();
+						objects[i]->HiddenItem = -1;
+						float qx, qy;
+						objects[i]->GetPosition(qx, qy);
+						item->SetPosition(qx, qy - BBOX_16);
+						CAnimationSets * animation_sets = CAnimationSets::GetInstance();
+						LPANIMATION_SET ani_set = animation_sets->Get(15);
+						item->SetAnimationSet(ani_set);
+						objects.push_back(item);
+					}
+				}
 			}
 			if (objects[i]->GetType() == GType::SHINNINGBRICK && (objects[i]->GetState() == SBRICK_STATE_NOTHINGLEFT))
 			{
@@ -478,8 +515,8 @@ void CPlayScene::Update(DWORD dt)
 				objects[i]->SetState(CPBRICK_STATE_COLLISION);
 				CPItem *PItem = new CPItem();
 				PItem->SetPosition(qx, qy - NUM_20);
-				objects.push_back(PItem);
-
+				object2.push_back(PItem);
+				mObjects.push_back(PItem);
 			}
 			if (objects[i]->GetType() == GType::PITEM && (objects[i]->GetState() == PITEM_STATE_COLLISION))
 			{
@@ -530,11 +567,12 @@ void CPlayScene::Update(DWORD dt)
 						player->z += 1;
 						brick->number -= 1;
 						CCoinInBrick *coin = new CCoinInBrick();
-						coin->SetPosition(qx, qy - 32);
+						coin->SetPosition(qx, qy - BBOX_16 * 2);
 						CAnimationSets * animation_sets = CAnimationSets::GetInstance();
 						LPANIMATION_SET ani_set = animation_sets->Get(12);
 						coin->SetAnimationSet(ani_set);
-						objects.push_back(coin);
+						object2.push_back(coin);
+						mObjects.push_back(coin);
 					}
 				}
 				else if (brick->kind == 2&&brick->number>0)
@@ -544,21 +582,77 @@ void CPlayScene::Update(DWORD dt)
 						player->z += 1;
 						brick->number -= 1;
 						CLeaf *leaf = new CLeaf();
-						leaf->SetPosition(qx, qy - 32);
+						leaf->SetPosition(qx, qy - BBOX_16 * 2);
 						CAnimationSets * animation_sets = CAnimationSets::GetInstance();
 						LPANIMATION_SET ani_set = animation_sets->Get(15);
 						leaf->SetAnimationSet(ani_set);
-						objects.push_back(leaf);
+						object2.push_back(leaf);
+						mObjects.push_back(leaf);
+					}
+				}
+				else if (brick->kind == 3 && brick->number > 0)
+				{
+					if (player->z == 0) {
+						player->z += 1;
+						brick->number -= 1;
+						CItem *item = new CItem();
+						item->SetPosition(qx, qy - BBOX_16*2);
+						CAnimationSets * animation_sets = CAnimationSets::GetInstance();
+						LPANIMATION_SET ani_set = animation_sets->Get(7);
+						item->SetAnimationSet(ani_set);
+						object2.push_back(item);
+						mObjects.push_back(item);
 					}
 				}
 				
 			}
+
 		}
-
-		//DebugOut(L"playerx:%f\n", player->x);
 	}
+	//for (size_t i = 0; i < objects.size(); i++)
+	//{
+	//	if (objects[i]->IsDie != true) {
+	//		coObjects.push_back(objects[i]);
+	//			DebugOut(L"object:%d\n", objects[i]->GetType());
+	//		
+	//	}
 
-	for (size_t i = 0; i < objects.size(); i++)
+	//}
+	for (size_t i = 0; i < mObjects.size(); i++)
+	{
+		if (mObjects[i]->IsDie != true)
+		{
+			//DebugOut(L"%d\n", mObjects[i]->type);
+			mObjects[i]->IsInGrid = false;
+			mObjects[i]->Update(dt, &staticObjects);
+			if (mObjects[i]->IsMovingObj) {
+				float l, t, r, b;
+				mObjects[i]->GetBoundingBox(l, t, r, b);
+				l = (int)(l / 165);
+				t = (int)(t / 120);
+				r = (int)(r / 165);
+				b = (int)(b / 120);
+				grid->push_backGrid(mObjects[i], (int)l, (int)t, (int)r, (int)b);
+			}
+		}
+	}
+	for (size_t i = 0; i < staticObjects.size(); i++)
+	{
+		if (staticObjects[i]->IsDie != true)
+		{
+			staticObjects[i]->IsInGrid = false;
+			staticObjects[i]->Update(dt);
+			float l, t, r, b;
+			staticObjects[i]->GetBoundingBox(l, t, r, b);
+			l = (int)(l / 165);
+			t = (int)(t / 120);
+			r = (int)(r / 165);
+			b = (int)(b / 120);
+			grid->push_backGrid(staticObjects[i], (int)l, (int)t, (int)r, (int)b);
+
+		}
+	}
+	/*for (size_t i = 0; i < objects.size(); i++)
 	{
 		if (objects[i]->IsDie != true)
 		{
@@ -574,8 +668,9 @@ void CPlayScene::Update(DWORD dt)
 				grid->push_backGrid(objects[i], (int)l, (int)t, (int)r, (int)b);
 			}
 		}
-	}
-	player->Update(dt, &coObjects);
+	}*/
+
+	player->Update(dt, &object2);
 	hud->Update(dt);
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
 	if (player == NULL) return;
@@ -591,16 +686,6 @@ void CPlayScene::Update(DWORD dt)
 	hud->SetPoint(player->Point);
 	hud->SetStack(player->stack);
 	hud->SetCoin(player->Coin);
-	if (mapid != 3)
-	{
-		if (player->y > 250)
-		{
-			CGame::GetInstance()->SetCamPos(cx, 265);
-		}
-		else {
-			CGame::GetInstance()->SetCamPos(cx, cy);
-		}
-	}
 	//CGame::GetInstance()->SetCamPos(cx, cy);
 	if (mapid == 3)
 	{
@@ -617,6 +702,28 @@ void CPlayScene::Update(DWORD dt)
 	else
 	{
 		player->IsInMap3 = false;
+		player->IsInMap4 = false;
+		if (mapid == 6)
+		{
+			if (player->y > 650)
+			{
+				CGame::GetInstance()->SetCamPos(cx, 730);
+			}
+			else
+			{
+				CGame::GetInstance()->SetCamPos(cx, cy);
+			}
+		}
+		else {
+
+			if (player->y > 250)
+			{
+				CGame::GetInstance()->SetCamPos(cx, 250);
+			}
+			else {
+				CGame::GetInstance()->SetCamPos(cx, cy);
+			}
+		}
 	}
 	if (mapid == 2)
 		CGame::GetInstance()->SetCamPos(cx, cy);
@@ -629,26 +736,8 @@ void CPlayScene::Update(DWORD dt)
 		if(player->NextScene!=2)
 			hud->time = 300;
 		CGame::GetInstance()->SwitchScene(player->NextScene);
+	}
 
-	}
-	if (mapid == 5)
-	{
-		if (player->x < cam1)
-		{
-			player->NextX = 206;
-			player->NextY = 55;
-			//player->SetPosition(206, 53);
-			CGame::GetInstance()->SwitchScene(3);
-		}
-		if (player->x > 2100)
-		{
-			CGame::GetInstance()->SetCamPos(cx, 10);
-		}
-		else {
-			cam1 += 0.8;
-			CGame::GetInstance()->SetCamPos(cam1, 10);
-		}
-	}
 }
 
 void CPlayScene::Render()
@@ -749,8 +838,8 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 		}
 		case DIK_S:
 		{
-			//DebugOut(L"line 352 Press S\n");
 			mario->SetState(MARIO_STATE_UP);
+
 			break;
 		}
 		}
@@ -807,8 +896,10 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 			}
 		}
 		if (game->IsKeyDown(DIK_RIGHT)) {
+			
 			mario->nx = 1;
 			mario->SetState(MARIO_STATE_WALKING_RIGHT);
+
 		}
 		if (game->IsKeyDown(DIK_LEFT))
 		{
@@ -817,15 +908,15 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 		}
 		if (game->IsKeyDown(DIK_A))
 		{
+			//mario->IsHolding = true;
 			if (mario->IsWalking)
 			{
 				mario->SetState(MARIO_STATE_RUNNING);
-
+				mario->IsHolding = true;
 			}
 		}
 		if (game->IsKeyDown(DIK_Z))
 		{
-			mario->IsHolding = true;
 		}
 	}
 	if (id == 3 || id == 4)
@@ -887,18 +978,26 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 	{
 	case DIK_RIGHT:
 		mario->IsWalkingR = false;
+		//mario->IsWalking = false;
 		break;
 	case DIK_LEFT:
 		mario->IsWalkingL = false;
 		break;
 	case DIK_A:
 		mario->IsRunning = false;
+		mario->IsHolding = false;
 		break;
 	case DIK_S:
 		float mvx, mvy;
+		//mario->IspressingS = false;
 		mario->GetSpeed(mvx, mvy);
 		if (mvy < 0)
-			mario->SetSpeed(mvx, 0);
+		{
+			if (!mario->IsOnSongbrick)
+			{
+				mario->SetSpeed(mvx, 0);
+			}
+		}
 		mario->IsFallSlow = false;
 		if (mario->IsFlying) {
 			if (mario->level == 4) {
@@ -937,7 +1036,6 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 		if (mario->IsHolding)
 		{
 			mario->IsHolding = false;
-			//DebugOut(L"line 482 playscene\n");
 			break;
 		}
 	}

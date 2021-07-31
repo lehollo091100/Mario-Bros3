@@ -159,9 +159,6 @@
     <ClCompile Include="Turtle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Boomerang.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FlyUpDownKoopas.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -170,6 +167,21 @@
     </ClCompile>
     <ClCompile Include="BrokenBrick.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CSongBrick.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="CounterBrick.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Extrasongbrick.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Boomerang.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Tail.cpp">
+      <Filter>Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -302,9 +314,6 @@
     <ClInclude Include="Turtle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Boomerang.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FlyUpDownKoopas.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -313,6 +322,21 @@
     </ClInclude>
     <ClInclude Include="BrokenBrick.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CSongBrick.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="CounterBrick.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Extrasongbrick.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Boomerang.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Tail.h">
+      <Filter>Player</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

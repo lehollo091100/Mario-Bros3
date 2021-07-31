@@ -28,9 +28,10 @@ public:
 		vy = 0;
 		type = GType::SHINNINGEXTRABRICK;
 		SetHealth(1);
+		health = 1;
 		IsDie = false;
 		state = EXTRABRICK_STATE_NORMAL;
-		
+		IsMovingObj = false;
 	};
 	void SetState(int state);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects);

@@ -39,7 +39,6 @@ LPCOLLISIONEVENT CGameObject::SweptAABBEx(LPGAMEOBJECT coO)
 	// deal with moving object: m speed = original m speed - collide object speed
 	float svx, svy;
 	coO->GetSpeed(svx, svy);
-
 	float sdx = svx * dt;
 	float sdy = svy * dt;
 
@@ -57,12 +56,12 @@ LPCOLLISIONEVENT CGameObject::SweptAABBEx(LPGAMEOBJECT coO)
 	);
 
 	CCollisionEvent * e = new CCollisionEvent(t, nx, ny, rdx, rdy, coO);
+
 	return e;
 }
 
 /*
 	Calculate potential collisions with the list of colliable objects
-
 	coObjects: the list of colliable objects
 	coEvents: list of potential collisions
 */
@@ -101,6 +100,8 @@ void CGameObject::FilterCollision(
 
 	for (UINT i = 0; i < coEvents.size(); i++)
 	{
+		
+		
 		LPCOLLISIONEVENT c = coEvents[i];
 
 		if (c->t < min_tx && c->nx != 0) {
@@ -177,7 +178,6 @@ void CGameObject::RenderBoundingBox()
 	rect.top = 0;
 	rect.right = (int)r - (int)l;
 	rect.bottom = (int)b - (int)t;
-
 	CGame::GetInstance()->Draw(x, y, bbox, rect.left, rect.top, rect.right, rect.bottom, 32);
 }
 

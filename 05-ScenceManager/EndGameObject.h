@@ -34,6 +34,7 @@ public:
 		this->vx = this->vy = 0;
 		SetState(STATE_STAR);
 		boardtime = 0;
+		IsMovingObj = false;
 	};
 	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects);

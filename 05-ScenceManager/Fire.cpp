@@ -86,7 +86,6 @@ void Fire::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 					e->obj->SetState(KOOPAS_STATE_DIE_UP);
 				}
 				this->SubHealth(1);
-				
 			}
 			if (e->obj->GetType()==GType::SHINNINGBRICK||e->obj->GetType()==GType::PIPE||e->obj->GetType()==GType::QUESTIONBRICK)
 			{

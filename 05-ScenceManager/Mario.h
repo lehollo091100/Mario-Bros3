@@ -3,6 +3,8 @@
 #include "Utils.h"
 #include "MarioGeneral.h"
 #include "Fire.h"
+#include "Tail.h"
+#include "Boomerang.h"
 #define MARIO_WALKING_SPEED		0.04f 
 #define MARIO_AX				0.04f
 #define MARIO_JUMP_SPEED_Y		0.37f
@@ -19,6 +21,8 @@
 #define GRAVITY_FALLSLOW		0.0005f;
 #define GRAVITY_FALLSLOW1		0.0006f;
 #define SPEED_RUNNING_INCREASE	0.002f
+#define ZEROPOINTFOUR	0.4f
+#define ZEROZEROZEROFIVE	0.005f
 
 #define MARIO_STATE_IDLE			0
 #define MARIO_STATE_WALKING_RIGHT	100
@@ -162,7 +166,7 @@
 #define MARIO_BIG_BBOX_WIDTH  15
 #define MARIO_BIG_BBOX_HEIGHT 28
 #define MARIO_TAIL_BBOX_WIDTH_ATTACK	24
-#define MARIO_TAIL_BBOX_WIDTH	12
+#define MARIO_TAIL_BBOX_WIDTH	14
 
 #define MARIO_SMALL_BBOX_WIDTH  13
 #define MARIO_SMALL_BBOX_HEIGHT 15
@@ -171,6 +175,10 @@
 
 #define MARIO_UNTOUCHABLE_TIME 5000
 #define NUMBER_10	10
+#define NUMBER_8	8
+#define THIRTEEN	13
+#define TIME_ATTACK_FIRST	100
+#define TIMEATTACK_LAST	470
 
 class CMario : public CGameObject
 {
@@ -188,8 +196,12 @@ public:
 	int time1;
 	//vector<LPGAMEOBJECT> LstWeapon;
 	vector<LPFire> LstWeapon;
+	Tail *tail;
+	//CBoomerang *boom=new CBoomerang();
+	//Tail *tail;
 	int z;// bien dung de han che so lan tao ra COIN trong exxtrashinningbrick
 public:
+	bool IsOnSongbrick=false;
 	bool IsWalkingR, IsWalkingL, IsRunning, IsSitting, IsRollback, IsSlowDown, IsFalling, IsMaxspeed, IsAttacking,IsDie;
 	bool IsJumping;
 	bool IsWalking;

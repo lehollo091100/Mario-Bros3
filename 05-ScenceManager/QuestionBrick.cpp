@@ -8,6 +8,7 @@ CQuestionBrick::CQuestionBrick(int BType)
 	startY = 0;
 	bricktype = BType;
 	state = 1;
+	IsMovingObj = false;
 }
 void CQuestionBrick::Render()
 {

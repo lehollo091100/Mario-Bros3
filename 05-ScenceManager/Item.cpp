@@ -1,5 +1,7 @@
 #include "Item.h"
-
+#define GRAVITY	0.008f
+#define ZEROZEROFORU	0.04f
+#define DEFLECTSPEED	0.009f
 CItem::CItem()
 {
 	SetState(ITEM_STATE_WALKING);
@@ -8,7 +10,6 @@ CItem::CItem()
 	nx = -1;
 	vx = nx * GOOMBA_WALKING_SPEED;
 	Isdie = false;
-	//IsWalking = true;
 	time = 0;
 	//state = s;
 
@@ -22,7 +23,7 @@ void CItem::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	if (IsDie)
 		return;
 	CGameObject::Update(dt, coObjects);
-	vy += 0.015f * dt;
+	vy += GRAVITY * dt;
 
 	vector<LPCOLLISIONEVENT> coEvents;
 	vector<LPCOLLISIONEVENT> coEventsResult;
@@ -47,12 +48,6 @@ void CItem::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				nx = -nx;
 				vx = nx * GOOMBA_WALKING_SPEED;
 			}
-		/*if (nx == 1)
-			if (x >= 150)
-			{
-				nx = -nx;
-				vx = nx * GOOMBA_WALKING_SPEED;
-			}*/
 
 	}
 
@@ -97,14 +92,19 @@ void CItem::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			LPCOLLISIONEVENT e = coEventsResult[i];
 			if (e->obj->GetType() == GType::COLORBRICK)
 			{
-				this->nx = -this->nx;
-				this->vx = this->nx*GOOMBA_WALKING_SPEED;
+				nx = -nx;
+				vx = nx*GOOMBA_WALKING_SPEED;
 			}
 			if (e->obj->GetType() == GType::GOOMBA)
 			{
 				if(e->nx!=0)
 					x += dx;
 				//y += dy;
+			}
+			if (e->obj->GetType() == GType::SHINNINGEXTRABRICK)
+			{
+				y += -ny * ZEROZEROFORU;
+				vy = -DEFLECTSPEED;
 			}
 			
 
